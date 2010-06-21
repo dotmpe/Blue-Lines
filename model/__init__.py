@@ -62,7 +62,7 @@ def find_instances(iface, **props):
     q = model.all()
     for k, v in props.items():
         if not v: continue
-        if v.endswith('%'):
+        if isinstance(v, basestring) and v.endswith('%'):
             q = filter_prefixed(q, k, v[:-1])
         else:
             q = q.filter(k+' =', v)

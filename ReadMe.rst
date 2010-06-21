@@ -1,6 +1,7 @@
 Blue Lines
 ==========
-:Id: ~blue/ReadMe
+.. :Id: ~Blue Lines/ReadMe
+
 :created: 2009-03-27
 :updated: 2010-05-13
 :project: https://launchpad.net/blue-lines
