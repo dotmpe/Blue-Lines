@@ -1,0 +1,3 @@
+User-agent: *
+Disallow: 
+Sitemap: http://blue-lines.appspot.com/sitemap.xml

@@ -1,0 +1,595 @@
+
+/* debugging */
+/*
+div {
+	border: 1px solid powderblue;
+}
+span {
+	border: 1px solid orange;
+}
+a {
+	border: 1px solid mediumvioletred;
+}
+cite {
+	border: 1px solid gold;
+}
+p {
+	border: 1px dotted lightgrey;
+}
+ul, ol {
+	border: 2px solid lightskyblue;
+}
+dl {
+	border: 2px solid skyblue;
+}
+dt {
+	border-bottom: 2px solid skyblue;
+}
+table {
+	border: 2px solid deepskyblue;
+}
+th {
+	border-bottom: 2px solid deepskyblue;
+}
+h1,h2,h3,h4,h5,h6 {
+	border-bottom: 2px solid crimson;
+}
+*/
+
+
+/* Default paddings for black elements */
+
+/*#contents *, .document * { font-family:"Frank Ruehl CLM"; font-size: 12pt; }*/
+
+/*body, h1, h2, h3, h4, h5, h6, div, blockquote, ol, ul, dl, dd, dt, li, pre, object, form {
+	margin:1.2em .5em; padding:1em 2em 3em 1em; }*/
+h1, h2, h3, h4, h5, h6, div, blockquote, ol, ul, dl, dd, dt, li, pre, form {
+	padding-top: 0;
+	padding-bottom: 1em; }
+p, li  { padding-bottom: 0; padding-right:0; }
+li { margin: 0 0 0 1em; }
+ol, ul { padding:0 0 0 1em; margin-left:1em;}
+img { padding: 1em 2em 3em 2em; }
+object { padding:0; }
+.section { padding:1em 0; }
+blockquote > p {padding:0 !important; margin:0 !important;}
+
+/* Root elements */
+
+html {
+	background-color:#555753 !important; }
+
+:root {
+	padding:0; margin:0; background:#eeeeec; }
+
+body {
+	padding: .2em .4em; margin:0; font-size:78%;
+	font-family: sans-serif; background:#eeeeec; color:black;
+	-moz-border-radius: 0 0 .4em .4em;
+    height: 100%;
+}
+
+body > * { padding:0.2em; }
+
+/* Colors */
+.header {
+	color:#888a85;
+	border-color:#d3d7cf; }
+.document {
+	background-color:white;
+	border-color:#d1c8bf; } /* #cfa272 #cfbdaa #e6d2bd*/
+.debug, .sidebar {
+	border-color: #d3d7cf;
+	background: #f7f4f0; }
+
+/* Layout etc. */
+div.header {
+	min-height:2.1em; width:47em; margin:.3em auto 0 auto;
+   /* padding:0 .5em;*/
+	-moz-border-radius:.7em .7em .2em .2em;
+	font-family: "Bitstream Vera Sans Mono", monospace;
+	border-width:.1em; border-style:solid; border-bottom:none; border-top-width:.3em; }
+.header hr, .footer hr {
+	display:none; }
+.sidebar { /* meta-column next to contents block */
+	float: right;
+	width: 23em; font-size: 80%;
+	margin:.4em .8em;
+	padding:.4em .8em;
+	border: 1px solid silver;
+	border-width:.1em;
+	border-top-width:.3em;
+	/*
+	-moz-border-radius:.4em .4em .2em .2em;
+	 */
+	border-style:solid;
+}
+.sidebar * {
+/*	max-width:28em;*/
+}
+.debug {
+	-moz-border-radius:.4em .4em .2em .2em;
+	border-width:.1em;
+	border-style:solid;
+	border-top-width:.3em; }
+.debug p {
+    text-indent: 0;
+    padding: 0;
+    margin: 0; }
+body {
+    text-align: center; }
+body * {    
+    text-align: left; }
+
+div.sitenotice strong.notice {
+    background: transparent url('/2009/01/dotmpe-v4/icon/tango-dialog-warning-16x16.png') no-repeat fixed left center;
+    padding-left: 20px;   
+    padding-right: 0;
+    border: none;
+    }
+div.sitenotice {
+    background: white;
+	border: 1px solid #d1c8bf; /* #cfa272 #cfbdaa #e6d2bd*/
+    border-width: 0 1px 3px 1px;
+/*    height:3em !important;*/
+    padding: 1em 2em;
+    margin: 0 auto 2em auto !important;
+    overflow: hidden;
+    width: 62em; }
+div.sitenotice p {
+   padding: 0;
+   margin: 0 0 1em 0;
+}
+div.sitenotice img.thumbnail {
+    margin: 0 1em;
+    padding: 0;
+    float: right; }
+    /*
+div.sitenotice p > * {
+    display: none; }
+div.sitenotice strong.notice {
+    display: inline; }
+div.sitenotice p notice {
+    display: block; }
+    */
+div.document {
+/* IE auto margin does not work */    
+	width:47em; margin:.2em auto; padding:1em .5em 4em .5em;
+    text-align: left; 
+/*	Moz' border radius is buggy for long block-level elements */
+	-moz-border-radius:.4em .4em .2em .2em;
+	border-width:.1em; border-style:solid; border-top-width:.3em;
+}
+div.document > *
+{
+	font-size:1.2em;
+}
+div.footer {
+	background:none;
+	width:47em; margin:.3em auto 1em auto; padding:0 .5em; clear:both; text-align:center;
+	border-width:0em; border-style:solid;
+	-moz-border-radius:0 0 .4em .4em;
+	color: #555753;
+}
+div.debug {
+	width:47em !important;
+    padding: .2em .5em;
+    margin:.2em auto; }
+.footer p, p.footer {
+	font-size:.8em; margin:0; padding:.2em; text-align: center; }
+.document p, .line, blockquote {
+	margin:.2em 2em .2em 1em;  }
+blockquote p {
+	font-size:inherit !important;}
+.line {
+	padding:0 1em; text-align:left; font-style:italic;
+	text-indent: -1em; }
+.contents {
+	border:1px solid silver; border-width:1px 0 1px 0; }
+p {	line-height:1.3em; text-align:justify; }
+/* No indent for first childs and any paragraph following an
+ * unkown element */
+p:first-child, *+p, .rubric+p { text-indent:0; }
+/* Indent paragraphs after paragraphs (and other structural
+ * text blocks like citations) */
+pre+p, cite+p, blockquote+p, p+p, div.sidebar+p, div.line-block+p { text-indent:1.5em; }
+/* rubric is an informal heading, epigraph are not really structural too */
+.rubric+p, .epigraph+p { text-indent: 0; }
+hr, hr.footer {
+	margin:5em auto 2em auto; width: 31.4%; padding: 0;
+	/* @XXX: Since there's no way to scale background images, this always
+	 * takes the actual size of the image and is ugly.*/
+	background:slategrey;
+	/*background:transparent url('/media/image/dotmpe/transition-Bitstream_Charter.png') no-repeat scroll center;*/
+	border: none; height:.1em; }
+blockquote {
+	padding:1em 3em;margin:2em .5em; text-indent:1.5em;
+	border:.1em solid #eeeeec; border-top:.3em solid #efebe7;
+	background: snow; -moz-border-radius:.4em .4em .2em .2em; }
+.center { margin: 1em auto; display:block; }
+.char-button {
+	font-size: large;
+	margin:.12em;
+    height:1.2em;
+    width:1.2em;
+    cursor: pointer;
+    text-align:center;
+   -moz-border-radius:.2em; color: slategrey; background:gainsboro; font-weight:bold; }
+.char-button:hover {
+	color: CornflowerBlue; border:0; }
+.uri-path {
+    margin:.7em .7em .2em .7em;
+    float: left;
+}
+.uri-path > :first-child {
+    margin-left:.7em;
+}
+.uri-path > * {
+    margin:.15em;
+}
+pre,
+.epigraph,
+.epigraph .attribution,
+.admonition p,
+.poetry {
+	text-indent:0; }
+.rubric {
+	color:#a40000; font-weight:bold; text-align:center !important;
+	margin:1em auto 3em auto !important; }
+.admonition {
+	padding:1em 3em;
+	margin: 2em;
+	border-top:1px dashed #ad7fa8; border-bottom:1px dashed #ad7fa8;
+	/*border-bottom:.1em solid whitesmoke;*/ }
+.admonition-title {
+	font-weight:bold; color:#5c3566; }
+p.poetry {
+	white-space:pre; font-family: serif;
+	padding:2em 7em; margin:1em auto 3em auto !important; }
+.poetry:first-letter {
+	font-size:168%; }
+blockquote.dictionary {
+	text-indent:-1.5em; text-align: justify; }
+blockquote.epigraph {
+	background:none; border:none; text-align:left; }
+.epigraph .attribution {
+	text-align: right;	}
+blockquote a.citation-reference {
+	margin:.2em; padding:.1em .4em; }
+pre {
+	border-top:.3em solid forestgreen; background:honeydew; -moz-border-radius:.4em .4em .2em .2em;}
+pre:first-letter {
+	white-space:normal; }
+tt {}
+.code .line, .code {
+	font-style:normal; font-family: monospace !important; white-space:pre !important; font-size:110%;}
+
+.bookmark {
+	margin:.5em 0; }
+.bookmark p {
+	margin:.2em; }
+.functions {
+	font-size:.9em;
+	margin:0 .4em; }
+.tags, .date {
+	font-size:.9em; }
+
+/*
+ * Forms
+ */
+form {
+	width:43em;
+    padding: .5em;
+	-moz-border-radius:.4em .4em .2em .2em; border-top:.3em solid #efebe7; }
+form > * {
+    margin:0; }
+label {
+	width:10em; float:left; font-weight:bold; font-size:0.85em; }
+input[type=text], textarea {
+	width:33em; padding:0.2em 0.4em; font-size:1em;
+	background-color: #ffffcc;
+	border-width:.1em; font-family:sans-serif; letter-spacing:0.02em; }
+input[type=submit], input[type=button] {
+	min-width:6em; width:auto;
+	border-width:.07em; -moz-border-radius: .2em;}
+.form-control-error {
+	padding:0.2em 1em; font-size:0.85em;
+	color:#ce1212; border-bottom:1px solid #ce1212; }
+/* Center forms */
+* > form {
+	margin:0 auto; }
+button[type=submit], .submit-control {
+	margin:.5em; float:right;
+	text-align:right; padding:.2em;
+	border-top: .1em solid #eeeeec; }
+
+/* Alternative compact display */
+form.compact {
+	padding:.4em 0; }
+form.compact p, form.compact label {
+	display: inline; width: auto; }
+form.compact label, form.compact input, form.compact select {
+	float:none; width: auto; }
+form.compact label {
+	font-size: 1.1em; position:relative; margin: .5em; }
+form.compact input[type=text] { width:25em; }
+
+/*
+ * Headers
+ */
+h1 {
+	margin:1.5em 0 1em 0; padding:.5em 0; }
+h2, h3, h4, h5, h6 {
+	margin:1.2em 1em .3em 1em;
+	 }
+.title {
+	display:block !important; font-weight: bold; }
+
+/* No top margin for first header in document */
+h1.title {
+	margin-top:0; padding:0;
+	font-size:3em; }
+
+/* other effects */
+h1, h2 {
+	color:#a40000;
+	font-family: Serif; }
+.document .topic {
+    margin: 1em;
+    padding: .7em 2em;
+    border-top: 1px dashed #ad7fa8; /*, 0x75507b, 0x5c3566),*/
+    border-bottom: 1px dashed #ad7fa8; /*, 0x75507b, 0x5c3566),*/
+}
+.topic-title,
+.sidebar-title {
+    padding-bottom: 1.2em;
+	font-family: Serif;
+	font-weight: bold;
+	text-indent: 0;	}
+h1.title {
+	color:black; }
+h1.title,
+.subtitle,
+.section h1 {
+	text-align:center; }
+
+/*
+ * Lists and Menus
+ */
+ol, ul {
+	list-style-position: outside; }
+li { margin:.2em;
+	display: list-item;  }
+li p { text-indent:0; }
+/*.mainmenu li:after, div.header li:after, div#header li:after {
+	content:" | "; }*/
+.footer ul {
+	padding:0; margin:0; }
+.header ul
+{
+	float:right; text-align:right; margin:0 .5em; padding:0;
+	font-size: 1.1em;
+	color:darkgray; }
+.header ol:first-child {
+	float:left;
+    text-align:right;
+	position:relative; font-size: .9em; }
+.header ul,
+ .header ol {
+	margin:.2em; padding:.3em .2em 1em ; }
+.header li {
+	padding:.2em; margin:0; }
+.header ul li, .menu li, .tags li, .footer li, .footer ul,
+.header ol li,
+.header li p {
+	display:inline; }
+.footer li {
+	font-size:.9em; }
+.tags {
+	padding:.4em .2em .15em .2em; margin:0;
+	font-size: 80%; }
+/*.tags li:after {
+	content:"."; }*/
+dl { }
+dt {
+	font-weight:bold; font-size:1.3em; margin:.3em 0; padding:0; }
+dd {
+	margin:0 0 .5em 1.5em; font-size: 1.2em; padding:0 0 .5em 0;}
+
+blockquote ol, blockquote ul {
+	text-indent: 0;}
+.arabic li {
+	list-style: decimal; }
+.roman li {
+	display: list-item; list-style: upper-roman; }
+
+/*
+ * Tables
+ */
+tr, td, th { border:none; }
+td { border-bottom:1px solid silver; }
+table {
+	margin:1em auto; border:1px solid red;
+	border:.2em #eeeeec solid; }
+table, tbody {
+/*	padding:.5em 1.6em !important;*/
+	width:auto; min-width:30em; max-width:42em; }
+th { font-weight:bold; }
+/*tr:nth-child(odd) {
+	border-bottom:.1em solid silver; background:#eeeeec; }*/
+
+/*
+ * Image, figures, iframes and objects
+ */
+iframe {
+	width:100%; min-height: 30em; border:0; }
+.figure p/*, .figure .caption, .figure legend */{
+	text-align:center; font-size:.9em; text-indent:0; }
+img, object, embed {
+	border:0; margin:0; }
+.figure {
+	text-align:center; margin: 1em 2em 3em 1em;}
+.figure {
+	border:.1em #eeeeec solid; margin-bottom:.5em; }
+.figure img {
+	min-width: 22em; width:inherit;
+	margin:1em auto 1em auto;
+	max-width:34em;
+}
+img.thumb {
+    max-width:4em;
+    min-width:3.5em;
+}
+.white {
+    background: white;
+}
+iframe,
+object[type^="application/xhtml"] {
+/*	padding:.6em .5em 1.2em .5em;
+	margin:1em auto; */width:98%; height:33em;
+	border:.1em solid #eeeeec; border-top:.3em solid sandybrown; -moz-border-radius:.4em .4em .2em .2em;
+}
+
+/*
+ * Links
+ */
+
+a {
+	text-decoration:none !important; font-weight:bold; }
+a:visited {
+	font-weight:normal; }
+
+/* Fragment anchors: Scarlet Red */
+/*a[name], a[id] {
+	color:#a40000; } */
+a[name]:visited, a[id]:visited {
+	/*color:#080606;*/ }
+/*a[id]:hover:before.footnote-reference { vertical-align:super;  }*/
+
+/* Internal links: Sky Blue */
+a.internal, a[href], a[href*='dotmpe.com/'] {
+	color:#204a87; }
+a.internal:visited, a[href]:visited, a[href*='dotmpe.com/']:visited {
+	color:#729fcf; }
+a.internal:hover, a[href]:hover, a[href*='dotmpe.com/']:hover {
+	border-bottom:.1em solid #204a87; color:#888a85; }
+
+/* External links: Orange */
+a.external, a[href^='http'] {
+	color:#ce5c00; }
+a.external:visited, a[href^='http']:visited {
+	color:#fcaf3e; }
+a.external:hover, a[href^='http']:hover {
+	border-bottom:.1em solid #ce5c00; color:#888a85; }
+
+/* Fragment links: Green? */
+a[href^='#'] {
+	color:#4e9a06; }
+a[href^='#']:hover {
+	border-bottom:.1em solid #73d216; }
+a[href^='#']:visited {
+	color:#888a85; }
+
+/* Resource Parameters (other arguments, same URL), gray/tan */
+a[href^='?'], .function {
+	color:slategray !important; }
+a[href^='?']:hover, .function:hover {
+	color:slategray !important; border-bottom:.1em solid #e9b96e !important; }
+
+a.icon {
+	height:6em; width:6em; margin:1.5em; display:block; float:left;
+	background-color:white; border:1px solid silver; }
+
+
+/*
+ * Generic; log, debug
+ */
+.system-message {
+	font-family: monospace; margin:2em 0; font-size:80%;
+	-moz-border-radius:.4em .4em .2em .2em; 
+	border: none;/*.1em solid #eeeeec;*/
+	border-top:.3em solid red; 
+}
+.system-message p {
+	text-indent:0; }
+.system-message-title {}
+.info, .notice, .error {
+	padding:.3em .7em;
+}
+.debug h6 {
+	margin:0;
+	padding:0 .2em .2em .2em;
+}
+.debug {
+	display:none;
+	width: auto !important;
+	clear:both;
+	border-color:#d1c8bf;
+	border-width:0 .1em .3em .1em;
+	border-style:solid;
+	-moz-border-radius:0 0 .4em .4em;
+}
+.notice {
+	border-color:#729fcf;
+}
+.error {
+	border-color:red;
+}
+.info {
+	border-color: forestgreen;
+}
+
+/*
+ * ReSt
+ */
+.docutils {
+}
+.docinfo { /* RST fields at the start of the document */
+	-moz-border-radius:.4em .4em .2em .2em;
+	border:.1em solid #d3d7cf; border-top-width:.3em; /* Frame is void so this don't work */
+	background: #f7f4f0; }
+.field-list { /* RST fields anywhere in the document */	}
+.docinfo, .field-list {
+	margin:0 auto 1em auto; width:auto;}
+.field-list .field,
+.docinfo .field {
+	width:100%; }
+.docinfo-name,
+.field-name,
+.field-body {
+	padding:.2em; /*vertical-align:center !important;*/ }
+.field-body {
+	border-bottom:.05em solid #d3d7cf;  }
+.docinfo-name,
+.field-name {
+	text-align:right; width:11em; }
+.field-body {
+	width:28em; }
+
+/* References */
+.docutils.citation, .docutils.footnote,
+.docutils tbody {
+	margin: 0; padding: 0 !important; }
+.footnote .label, .citation .label {
+	width:9em;
+	text-align: right; }
+/*.citation, .footnote { margin-bottom:.3em; }*/
+.footnote, .citation { margin:0; }
+.footnote td, .citation td { border:none; }
+
+table.docutils.field-list
+{
+    border-width: 0;
+    border-left: .2em solid #eeeeec; 
+    padding-left: 1em;
+}
+table.docutils.field-list > tbody > tr.field
+{
+/* XXX: cannot style field?
+    border-left: .5em solid #d3d7cf !important;
+    padding-left: 1em;
+    border: 10px solid red;
+*/    
+}
+
+

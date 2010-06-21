@@ -1,0 +1,5 @@
+BLANK = '␢'
+NWLN = '␤'
+HELM = '☸'
+DHARMA = '☸'
+ALT_KEY = ''

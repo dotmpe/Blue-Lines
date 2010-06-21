@@ -1,0 +1,79 @@
+application: blue-lines
+version: 2
+runtime: python
+api_version: 1
+
+default_expiration: "5d"
+
+#inbound_services:
+#- mail
+
+handlers:
+# Google integrated handlers
+- url: /core/remote_api
+  script: $PYTHON_LIB/google/appengine/ext/remote_api/handler.py
+  login: admin
+
+- url: /core/app-stats.*
+  script: $PYTHON_LIB/google/appengine/ext/appstats/ui.py
+
+- url: /core/admin.*
+  script: $PYTHON_LIB/google/appengine/ext/admin
+  login: admin
+
+#- url: /_ah/mail/.+
+#  script: main.py
+#
+#- url: /_ah/xmpp/message/chat/
+#  script: main.py 
+
+# Tasks
+- url: /sessions/cleanup
+  script: /cleanup_sessions.py
+
+# Owner Verification code for GA
+- url: /google4356ac8e77868373.html
+  static_files: var/google4356ac8e77868373.html
+  upload: var/google4356ac8e77868373.html
+
+- url: /favicon.ico
+  static_files: var/media/favicon.ico
+  upload: var/media/favicon.ico
+
+- url: /robots.txt
+  static_files: var/media/robots.txt
+  upload: var/media/robots.txt
+
+- url: /media
+  static_dir: var/media
+
+- url: /script
+  static_dir: var/script
+
+- url: /(.*)\.rst
+  static_files: \1.rst
+  mime_type: text/plain
+#  mime_type: text/x-restructuredtext
+  upload: (.*)\.rst
+
+- url: /.*
+  script: main.py
+
+skip_files:
+- ^Makefile$
+- ^app\.yaml$ 
+- ^index\.yaml$ 
+- ^\.lvimrc$ 
+- ^.*\.swp$ 
+- ^.*\.py[co]$ 
+- ^\.bzr$ 
+# skipped files are excluded from import:
+- ^lib/.*[^(\.zip)]$
+
+admin_console:
+  pages:
+  - name: "Datastore stats"
+    url: /core/storage-stats
+  - name: "RPC stats"
+    url: /core/app-stats
+

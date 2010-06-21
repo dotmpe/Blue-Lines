@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+    <head>
+    <title>Blue-Lines</title>
+    
+    <link rel="stylesheet" href="/media/style/default.css" type="text/css" media="screen" />
+<!--   
+    <script src="/scrow.js" type="text/javascript"></script>
+    <base href="http://ad-fontes.appspot.com/2009/03/26/scrow" />
+    -->
+    <style>
+        #user-bar 
+        {
+            text-align: right;
+        }
+    </style>
+    </head>
+    <body class="autowidth">
+        {% if user %}
+        <div id="user-bar">
+            <span>
+                <a href="/%7e/">{{ user.email }}</a> {% if user.admin %}(admin){% endif %} |
+                <a href="{{ user.logout|escape }}">sign out</a>
+            </span>
+        </div>       
+        {% else %}
+        <div id="user-bar">
+            <span>
+                <a href="/%7e/">Sign in</a>
+            </span>
+        </div>       
+        {% endif %}
+        {% if sources %}
+        <div class="listing">
+            <table>
+                <tr>
+                    <th>Unique ID</th>
+                    <th>digest</th>
+                    <th>time</th>
+                    <th>errors</th>
+                </tr>    
+            {%  for info in sources  %}
+                <tr class="{% cycle uneven,even %}">
+                    <td><a href="/{{ info.parent.key.name }}">{{ info.parent.key.name  }}</a> 
+                        <a href="/{{ info.parent.key.name }}.{{ info.format }}">({{ info.format }})</a></td>
+                    <td>{{  info.digest  }}</td>
+                    <td>{{  info.time }}</td>
+                    <td>{{  info.errors }}</td>
+                </tr>
+
+            {%  endfor  %}
+
+            </table>
+        </div>
+        {% endif %}
+        <div class="document">
+            {{ document }}
+        </div>
+    </body>
+</html>
