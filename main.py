@@ -28,10 +28,10 @@ handler.BlueLinesHandler.server = bluelines
 handler.SourceXmlRPC.handler = [ ('blue', bluelines), ('', nabu), ]
 
 # redirects
-toUserDir = handler.reDir('/~/')
-toUserDir.pattern = '/?$'
-#toMain = handler.reDir('/~bluelines/')
-#toMain.pattern = '/?$'
+#toUserDir = handler.reDir('/~/')
+#toUserDir.pattern = '/?$'
+toMain = handler.reDir('/ReadMe')
+toMain.pattern = '?$'
 
 
 application = webapp.WSGIApplication(map(
@@ -52,6 +52,7 @@ application = webapp.WSGIApplication(map(
 
         #handler.User, # FIXME: cannot have stateless GA?
 
+        handler.UserAuth,
         handler.Config,
         handler.Alias,
         handler.Stat,
@@ -79,7 +80,7 @@ application = webapp.WSGIApplication(map(
         #handler.Sitemap,
 
         handler.NotFoundPage,
-        toUserDir,
+        toMain,
      ]), debug=True)
 
 

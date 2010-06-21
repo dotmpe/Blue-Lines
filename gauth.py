@@ -22,6 +22,9 @@ http://stackoverflow.com/questions/816372/how-can-i-determine-a-user-id-based-on
 See also: http://markmail.org/thread/tgth5vmdqjacaxbx
 """
 import logging, md5, urllib, urllib2
+import _conf
+from util import get_opener
+from exception import AuthError
 
 
 def do_auth(appname, user, password, dev=False, admin=False):
@@ -91,9 +94,10 @@ def get_gae_cookie(appname, auth_token):
     """
 
     continue_location = "http://localhost/"
+    continue_location = "http://%s.appspot.com/" % appname
     args = {"continue": continue_location, "auth": auth_token}
     host = "%s.appspot.com" % appname
-    url = "https://%s/_ah/login?%s" % (host,
+    url = "http://%s/_ah/login?%s" % (host,
                                urllib.urlencode(args))
 
     opener = get_opener() # no redirect handler!
@@ -108,8 +112,12 @@ def get_gae_cookie(appname, auth_token):
         raise urllib2.HTTPError(req.get_full_url(), response.code, 
                 response.msg, response.headers, response.fp)
 
+    logging.debug(response.headers)
+
     cookie = response.headers.get('set-cookie')
-    assert cookie and cookie.startswith('ACSID')
+    assert cookie and (cookie.startswith('ACSID') or cookie.startswith('SACSID')), (type(cookie),cookie)
+    #if cookie.startswith('S'):
+    #    cookie = cookie[1:]
     return cookie.replace('; HttpOnly', '')
 
 def get_google_authtoken(appname, email_address, password):
@@ -144,25 +152,4 @@ def get_google_authtoken(appname, email_address, password):
                                    e.headers, response_dict)
         else:
             raise
-
-class AuthError(urllib2.HTTPError):
-    """Raised to indicate there was an error authenticating."""
-
-    def __init__(self, url, code, msg, headers, args):
-        urllib2.HTTPError.__init__(self, url, code, msg, headers, None)
-        self.args = args
-        self.reason = args["Error"]
-
-def get_opener(cookiejar=None):
-    opener = urllib2.OpenerDirector()
-    opener.add_handler(urllib2.ProxyHandler())
-    opener.add_handler(urllib2.UnknownHandler())
-    opener.add_handler(urllib2.HTTPHandler())
-    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
-    opener.add_handler(urllib2.HTTPErrorProcessor())
-    opener.add_handler(urllib2.HTTPSHandler())
-    if cookiejar:
-        opener.add_handler(urllib2.HTTPCookieProcessor(cookiejar))
-    return opener
-
 

@@ -27,7 +27,6 @@ from dotmpe.du.comp import get_builder_class, get_writer_class
 
 import interface
 import exception
-import gauth
 import model.auth
 from model.source import Source, SourceInfo
 from model.alias import Membership
@@ -35,6 +34,7 @@ from model.config import ProcessConfiguration, PublishConfiguration,  \
         BuilderConfiguration
 import api
 import render
+from chars import CRLF
 
 
 logger = logging.getLogger(__name__)
@@ -42,7 +42,6 @@ components = compy.getRegistry()
 
 
 ALIAS_re = re.compile('~([_\w][-_\w\ ]+)/(\w+/?)*(\.\w+)?')
-CRLF = '\r\n'
 
 
 def conv_version(arg):
@@ -77,7 +76,7 @@ def do_basic_auth(basic_auth, dev=False):
         if not dev:
             try:
                 auth_token = get_google_authtoken('blue-lines', name, passwd)
-            except gauth.AuthError, e:
+            except exception.AuthError, e:
                 logger.info("Got a failed login attempt for Google Accounts %r",
                         username)
                 raise AuthError, ""
@@ -104,6 +103,20 @@ def do_basic_auth(basic_auth, dev=False):
 
 PARAM_re = '%s\=([a-z0-9]+)'
 
+def get_opener(cookiejar=None, error_proc=True):
+    opener = urllib2.OpenerDirector()
+    opener.add_handler(urllib2.ProxyHandler())
+    opener.add_handler(urllib2.UnknownHandler())
+    opener.add_handler(urllib2.HTTPHandler())
+    opener.add_handler(urllib2.HTTPDefaultErrorHandler())
+    if error_proc:
+        opener.add_handler(urllib2.HTTPErrorProcessor())
+    opener.add_handler(urllib2.HTTPSHandler())
+    if cookiejar:
+        opener.add_handler(urllib2.HTTPCookieProcessor(cookiejar))
+    return opener
+
+
 def get_param(paramstr, name, default):
     assert name.isalnum()
     m = re.compile(PARAM_re % name).match(paramstr)
@@ -121,7 +134,12 @@ def fetch_uriref(uriref, dt=None, etag=None, md5check=None):
     if etag:
         req.add_header('If-None-Match', etag)
     # TODO: HTTPError, URLError
-    res = urllib2.urlopen(req)
+    try:
+        res = urllib2.urlopen(req)
+    except urllib2.HTTPError, e:
+        if e.code == 304:
+            return 
+        logger.critical([e, type(e), e.code])
     # XXX: res.geturl() == uriref ?
     contents = res.read()
     #if not contents:

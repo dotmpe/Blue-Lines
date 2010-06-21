@@ -1,4 +1,4 @@
-import os, sys, traceback, logging, urllib
+import os, sys, traceback, logging, urllib, urlparse, cgi
 from google.appengine.ext import db, webapp
 from google.appengine.ext.db import stats, GqlQuery
 from google.appengine.api import users
@@ -15,11 +15,13 @@ import gaesessions
 import docutils
 # BL modules
 import exception
-import util
 import interface
 import model
 import api
 #import extractors.reference
+import gauth
+import util
+import chars
 from _conf import DOC_ROOT, BASE_URL, API
 from util import *
 
@@ -543,7 +545,7 @@ class AliasApplication(DuBuilderPage):
 
 class StaticPage(DuBuilderPage):
     #pattern = '([^\.]+)\.?(%s)?$' % (DuBuilderPage.ID)
-    pattern = '(.*)$'
+    pattern = '(.+)$'
 
     @http_qwds(':str','expose_settings:bool', 'expose_specs:bool')
     #@web_auth
@@ -601,6 +603,66 @@ class RstPage(DuBuilderPage):
 
 class APIRoot(DuBuilderPage):
     pattern = API + '.*'
+
+class UserAuth(DuBuilderPage):
+    pattern = API + '/user/auth'
+
+    def get(self, v):
+        self._login()
+
+    def post(self, v):
+        props = dict(map(lambda p:(str(p[0]),p[1]),getattr(self.request,
+            self.request.method).items()))
+        self._login(**props)
+
+    def _login(self, Email=None, Passwd=None, **props):
+        self.response.headers['Content-Type'] = 'text/plain'
+        user = users.get_current_user()
+        if not user:
+            appname = "blue-lines"
+            cookie = gauth.do_auth(appname, Email, Passwd)
+            #gauth.get_gae_cookie(appname, auth_token)
+            self.response.headers['Set-Cookie'] = cookie
+        else:            
+            self.response.out.write(str(user)+chars.CRLF)
+            self.response.out.write(users.create_logout_url(self.request.uri))
+
+    def _login_old(self, Email=None, Passwd=None, **props):
+        self.response.headers['Content-Type'] = 'text/plain'
+        user = users.get_current_user()
+        if not user:
+            login_url = users.create_login_url(self.request.uri)
+            if not login_url.startswith('http'):
+                login_url = _conf.BASE_URL + login_url
+            login_query = urlparse.urlparse(login_url).query
+            props.update(dict(user=Email, Passwd=Passwd))
+            props.update(cgi.parse_qsl(login_query))
+            #logger.info([login_url, login_query, props])
+            req = urllib2.Request(login_url, urllib.urlencode(props))
+            #req = urlfetch.fetch(login_url, urllib.urlencode(props))
+            resp = None
+            try:
+                #pass
+                resp = util.get_opener().open(req)
+            except Exception, e:
+                logging.critical([e, type(e), dir(e), repr(e), e.args, e.message])
+            if resp:
+                cookie = resp.info().get('Set-Cookie', '')
+                if cookie:
+                    self.response.headers['Set-Cookie'] = cookie
+                else:
+                    self.set_status(403)
+                self.response.out.write(str(resp.headers)+chars.CRLF)
+                self.response.out.write(resp.read())
+            elif Email:
+                self.set_status(403)
+            else:
+                self.set_status(401)
+            #resp = urllib2.urlopen(login_url, urllib.urlencode(props))
+            return
+        else:
+            self.response.out.write(str(user)+chars.CRLF)
+            self.response.out.write(users.create_logout_url(self.request.uri))
 
 
 class Alias(DuBuilderPage):

@@ -16,6 +16,7 @@ import hashlib
 import _conf
 from docutils import nodes
 from google.appengine.api import users
+from google.appengine.ext import db
 
 import util
 import exception
