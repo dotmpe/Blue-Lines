@@ -1,0 +1,17 @@
+*.pyc
+*.zip
+.tmp
+lib/*.zip
+lib/*.py
+lib/*.tar.gz
+lib/breve
+lib/docutils
+lib/dotmpe
+lib/gaesessions
+lib/gate
+lib/nabu
+lib/nabu-blue-lines.patch
+lib/nabu.hg
+lib/vestige
+lib/zope
+lib/xmlrpcserver
