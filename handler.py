@@ -153,7 +153,7 @@ class BlueLinesPage(BlueLinesHandler):
 
     def assertion_error(self, e=None):
         descr = "The server encountered a possible programming"\
-                " fault and could not recover. "
+                " error and could not recover. "
         self.server_error('Assertion fault', descr, e)
 
     def exception(self, e=None):

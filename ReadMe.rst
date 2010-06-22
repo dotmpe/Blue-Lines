@@ -3,7 +3,7 @@ Blue Lines
 .. :Id: ~Blue Lines/ReadMe
 
 :created: 2009-03-27
-:updated: 2010-05-13
+:updated: 2010-06-22
 :project: https://launchpad.net/blue-lines
 :homepage: http://blue-lines.appspot.com/
 
@@ -13,19 +13,20 @@ Blue Lines
    - This would be not only a web-frontend for Docutils but also a document
      storage. Alas, there's still much to be done.
    - Current focus is on restfull API, HTML UI stuff is mostly old. There is a 
-     restfull API that is somewhat working but lacking in major features.
+     pre 0.1 version API that is somewhat working.
      At this point, http://rst2a.com is a more viable alternative if you need a 
      docutils web-service.
-   - How to use the file-name extension (local src vs. web resource) at least 
-     some rewriting should become part of the publication cycle.  
 
-.. note:: About this file
 
-   This is the main page for the project. There is also a project_ homepage for the
-   source-code you can get with ``bzr branch lp:new-lines``.
+.. admonition:: About this file
 
-   The GAE deployment is at http://blue-lines.launchpad.net/.
+   This is the main page for the project, source code available 
+   using ``bzr branch lp:new-lines`` 
+   or ``git clone git://github.com/dotmpe/Blue-Lines.git``.
+
+   The GAE deployment is at http://blue-lines.appspot.com/.
    This document should be `online there`__.
+
 
 Blue Lines project brings Python docutils and Nabu data mining to the GAE
 platform. 
@@ -40,9 +41,8 @@ experiment with various aspects of Du.
    text, and published to the server from any host with a standard Python 
    installation.
 
-.. __: http://blue-lines.appspot.com/ReadMe.rst
+.. __: http://blue-lines.appspot.com/ReadMe
 
-.. _project: https://code.launchpad.net/blue-lines
 .. _rst2a: http://rst2a.com
 
 Description
@@ -52,23 +52,30 @@ The on-line features are under development, the current aims are:
 * A multi-user document base with private and public classification, authorised
   by Google Accounts. Future enhancements could possibly include user-groups
   and a PGP trust network?
-* Extraction and indexing of various data and microformats, such as references, contacts, book descriptions, etc.
-* Linking to documents on the web or on Blue Lines, within ones own document base or someone elses.
+* Extraction and indexing of various data and microformats, such as references,
+  contacts, book descriptions, etc.
+* Linking to documents on the web or on Blue Lines, within ones own document
+  base or someone elses. Verifying the integrity of these references.
 * Backup and document processing using a to-be completed reStructuredText writer.
 * `read on .. </doc/main.rst>`__ (Here be dragons).
 
-The offline editing is done in reStructuredText. Possibly other formats may be adapted to Docutils in the future. Publication requires a standard Python installation and the Blue publisher client, an adaption of Nabu.
+..
+    The offline editing is done in reStructuredText. Possibly other formats may be adapted to Docutils in the future. Publication requires a standard Python installation and the Blue publisher client, an adaption of Nabu.
 
-Download the client here__.
+.. warning::
 
-.. __: /var/media/blue
+   Nabu Xml-RPC compatibility has been suspended in favor of an RESTfull API.
+
+   Download the old client here__.
+
+   .. __: /var/media/blue
 
 
 Overview
 --------
 main.py
     Script with WSGI Application hook for Google App-Engine.
-handlers.py
+handler.py
     Maps requests to handler classes, runs all HTTP views among which legacy
     Nabu XMLRPC and the Blue Lines XMLRPC.
 lib/

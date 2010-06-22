@@ -1,5 +1,8 @@
 """
 Docutils server. Its similar to Nabu and a new server for Blue Lines.
+
+TODO: How to use the file-name extension (local src vs. web resource) at least 
+      some rewriting should become part of the publication cycle.  
 """
 import os, logging, urllib, urlparse, hashlib, datetime, xmlrpclib, StringIO, re
 from pickle import dumps

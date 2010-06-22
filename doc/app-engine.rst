@@ -1,10 +1,12 @@
 :Id: doc/app-engine
 :description: Notes.
 
+Django
+=======
 App Engine provides Django 0.96.
 
 Django 0.96 should sport reStructuredText and Textile filters,
-but GAE does not include these..
+but GAE does not include these.
 
 Authorization
 =============
@@ -38,7 +40,6 @@ and even 50GB output for retrieval.
 
 The datastore is more restricted, allowing 1GB unbilled storage,
 though daily traffic limits are very lenient again.
-
 
 This means it may be a good idea to cache all remote data, and not to store
 pickled trees in the store, but in cache. Plain text sources still can go into
