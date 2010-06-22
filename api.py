@@ -1,12 +1,13 @@
 """
 Aux. model controller routines. 
 
-Wrapper around model, used by handler and server. 
+Scaffolding for model, used by handler and server. 
 FIXME: In fact, some it there may move here, and model should not be used
     directly.
 
 TODO: this should be used by handlers and server, ie. move mutating operations here.
 TODO: session/ACL decoration later? see also model.auth
+TODO: find should search, fetch should raise on None-result
 """
 import logging
 import itertools
@@ -86,10 +87,11 @@ def new_or_existing_ga(user, alias_suggestion=None):
 
 ## Alias
 
-def query_alias(id, **props):
+def query_alias(Id, **props):
     "Query for Alias. "
-    q = model.query(interface.IAlias, id, **props)
-    logging.info("IAlias (%s) %s : %s", id, props, q)
+    assert not Id or Id.isdigit(), "No valId Id: %s (%s)" % (Id, type(Id))
+    q = model.query(interface.IAlias, Id, **props)
+    logging.info("IAlias (%s) %s : %s", Id, props, q)
     return q
 
 def fetch_alias(id, **props):
@@ -105,7 +107,7 @@ def find_alias(id, handle=None):
     i = fetch_alias(id, handle=handle)
     if not i:
         raise exception.NotFound("No Alias %r (%s)" % (handle, id))
-    assert isinstance(i, model.Alias), i
+    assert isinstance(i, Alias), i
     return i
 
 def delete_alias(id, handle=None):
@@ -315,6 +317,30 @@ def update_config(conf, **props):
 
 
 ## Source
+
+def source_ref(alias, unid):
+    " Return an Source key.  "
+    if not alias:
+        p = unid.find('/')
+        alias = db.Key.from_path('Alias', unid[1:p])
+    elif isinstance(alias, Alias):
+        alias = alias.key().id()
+    path = ('Alias', alias, 'Source', unid)
+    return db.Key.from_path(*path)
+
+def fetch_sourceinfo(alias, unid):
+    key = source_ref(alias, unid)
+    # XXX: one info child per source?
+    srcinfo = SourceInfo.all().ancestor(key).get()
+    assert srcinfo, "No SourceInfo %s" % unid
+    return srcinfo
+
+def fetch_source(alias, unid):
+    key = source_ref(alias, unid)
+    src = Source.get(key)
+    #src = Source.all(key).ancestor(alias).get()
+    assert src, "No SourceInfo %s" % unid
+    return src
 
 def document_new(unid, **props):
     builder = util.get_builder(props.get('builder', 'bluelines.Document'))

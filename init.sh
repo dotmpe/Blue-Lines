@@ -99,8 +99,8 @@ test_fetch()
 if test "$1" == 'dev'; then
     CURL_="-b .cookie.jar http://iris:8080/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
-    #do_dev_login # first-run bug in GAE-SDK, module not loaded
-    #do_dev_login
+    do_dev_login # first-run bug in GAE-SDK, module not loaded
+    do_dev_login
 else
     CURL_="-b .cookie.jar http://blue-lines.appspot.com/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
@@ -115,11 +115,14 @@ init_alias
 #test_fetch
 curl $CURL/process \
     -F unid="~Blue Lines/ReadMe" 
-exit
-#    --data-urlencode rst@"ReadMe.rst" \
-#curl $CURL/publish \
-#    -F unid="~Blue Lines/ReadMe" \
-#    -F format=bl-html
+curl $CURL/publish \
+    -F unid="~Blue Lines/ReadMe" \
+    -F format=html
+curl $CURL_/process \
+    --data unid="~Sandbox/Test1" \
+    --data-urlencode rst@"ReadMe.rst" 
+curl $CURL_/publish \
+    --data unid="~Sandbox/Test1" 
 #curl $CURL/alias \
 #    -F handle="Blue Lines" \
 #    -F "default-title"="Blue Lines" \
@@ -128,4 +131,4 @@ exit
 #    -F "default-page"=welcome \
 #    -F "default-leaf"=main \
 #    -F "remote-path"="http://iris:8088" 
-rm .cookie.jar
+#rm .cookie.jar

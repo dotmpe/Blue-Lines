@@ -1,3 +1,8 @@
+"""
+GAE Request handlers
+
+TODO: process on req. for static- and rst-page
+"""
 import os, sys, traceback, logging, urllib, urlparse, cgi
 from google.appengine.ext import db, webapp
 from google.appengine.ext.db import stats, GqlQuery
@@ -233,6 +238,7 @@ class SourceAliasXmlRPC(AbstractXmlRPC):
 
 class DSStatsPage(webapp.RequestHandler):
     pattern = 'core/datastore-stats$'
+    # FIXME
 
     @http
     def get(self):
@@ -268,7 +274,9 @@ class DuBuilderPage(BlueLinesPage):
     ID = '[a-zA-Z_][-a-zA-Z0-9]+'
     DOC_EXT = '[rR][eE]?[sS][tT]|[tT][eE]?[xX][tT]'
 
+
 class Sitemap(webapp.RequestHandler):
+    # FIXME
     pattern = 'sitemap\.?(%s)?$' % DuBuilderPage.ID
 
     @http
@@ -277,7 +285,7 @@ class Sitemap(webapp.RequestHandler):
         pass # TODO
 
 class SourcePage(DuBuilderPage):
-    # XXX: Unused
+    # FIXME
     " Pass-through handler to expose application source files.  "
     pattern = '(%s)+(?:[p][y])$' % DuBuilderPage.ID
 
@@ -291,6 +299,7 @@ class SourcePage(DuBuilderPage):
         doc = self.server.build(source, source.unid, builder_id)
 
 class UserDir(BlueLinesPage):
+    # FIXME
     " List user aliases. "
     pattern = '%7E/?$'
 
@@ -385,6 +394,8 @@ class _AliasDirDjango(BlueLinesPage):
 
 
 class FormTest(DuBuilderPage):
+    # FIXME
+
     pattern = 'example/form\.?(%s)?' % DuBuilderPage.ID
     #builder_class = 'AliasFormPage'
     default_format = 'htmlform'
@@ -476,6 +487,7 @@ class AliasTemplate(DuBuilderPage):
 
 
 class DocumentTemplate(DuBuilderPage):
+    # FIXME
     pattern = 'template/document\.?(%s)?$' % DuBuilderPage.ID
 
     @http
@@ -485,6 +497,7 @@ class DocumentTemplate(DuBuilderPage):
         pass
 
 class UserTemplate(DuBuilderPage):
+    # FIXME
     pattern = 'template/user\.?(%s)?$' % DuBuilderPage.ID
 
 
@@ -582,21 +595,23 @@ class StaticPage(DuBuilderPage):
 
 
 class RstPage(DuBuilderPage):
+    """
+    Publish one local document.
+    """
     pattern = '%%7E([^/]+)/([^\.]+)\.?(%s)?$' % DuBuilderPage.ID
 
-    @http
+    @http_qwds(':unicode',':unicode',':str')
     @web_auth
-    @init_alias
-    @fetch_sourceinfo
-    @validate_access
-    #@connegold
     @mime
-    def get(self, user, alias, srcinfo, format):
-        assert user or alias
+    def get(self, user, alias, docname, format=None):
+        if not alias:
+            return self.not_found()
+        alias = api.find_alias(None, alias)
+        unid = "~%s/%s" % (alias.handle, docname)
+        #srcinfo = api.fetch_sourceinfo(alias, unid)
         self.server._reload(alias)
-        # Retrieve from cache or build
-        source = srcinfo.parent()
-        return 'text/html', self.server.publish(source.key().name())
+        #source = srcinfo.parent()
+        return 'text/html', self.server.publish(unid)
 
 
 # Restfull API

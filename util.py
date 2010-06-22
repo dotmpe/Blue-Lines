@@ -355,8 +355,8 @@ def http_qwds(*fields, **kwds):
                 if ';' in ct:
                     p = ct.find(';')
                     ct = ct[:p]
-                assert ct in (
-                        'multipart/form-data', 'application/x-urlencoded'), ct
+                assert ct in ('application/x-www-form-urlencoded',
+                        'multipart/form-data', ), ct
             # take positional arguments from URL pattern
             argcnt = len(args)
             for idx, data in enumerate(args):
@@ -482,8 +482,9 @@ def init_alias(method):
                     return exception.NotFound("Alias %r" % alias_id)
                 else:
                     alias = api.new_alias(user, alias_id)
-
-        return method(self, user, v, alias, unid=unid, *args, **qwds)
+        if unid:
+            qwds.update(dict(unid=unid))
+        return method(self, user, v, alias, *args, **qwds)
     return wrapper
 
 ## Content fetch
@@ -493,12 +494,7 @@ def fetch_sourceinfo(method):
     @functools.wraps(method)
     def wrapper(self, user, alias, doc_name, *args):
         unid = "~%s/%s" % (alias.handle, doc_name)
-        srcinfo = SourceInfo.all().ancestor(
-                source_key(alias, unid)).get()
-        if not srcinfo:
-            logger.debug("Unable to find %s", unid)
-            self.not_found()
-            return
+        srcinfo = api.fetch_sourceinfo(alias, unid)
         logger.debug("Retrieved SourceInfo for %s. ", unid)
         return method(self, user, alias, srcinfo, *args)
     return wrapper
@@ -510,7 +506,7 @@ def fetch_if_sourceinfo(method):
         if alias.is_saved():
             unid = "~%s/%s" % (alias.handle, doc_name)
             srcinfo = SourceInfo.all().ancestor(
-                    source_key(alias, unid)).get()
+                    source_ref(alias, unid)).get()
             logger.debug("Retrieved SourceInfo for %s. ", unid)
         return method(self, user, alias, srcinfo, *args)
     return wrapper

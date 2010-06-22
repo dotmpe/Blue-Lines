@@ -1,3 +1,6 @@
+"""
+Prepare include path, some global constant values.
+"""
 import os, sys
 
 

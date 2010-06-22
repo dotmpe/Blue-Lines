@@ -1,8 +1,5 @@
 """
-GAE main entry point.
-
-Sets up the XmlRPC server handler and other pages.
-The docutils frontend itself sits in ``server.py``.
+Main entry point of GAE app.
 """
 from google.appengine.ext import webapp
 from google.appengine.ext.webapp.util import run_wsgi_app
@@ -10,9 +7,10 @@ import _conf
 import model
 import server
 import handler
+import storage
 
 
-bluelines = server.BlueLines(model.source.SourceStorage(), [
+bluelines = server.BlueLines(storage.SourceStorage(), [
         'bluelines',
         'dotmpe.du.builder.dotmpe_v5',
     ], [
@@ -49,9 +47,7 @@ application = webapp.WSGIApplication(map(
 
         handler.DSStatsPage,
 
-        handler.SourceXmlRPC,
-
-        #handler.User, # FIXME: cannot have stateless GA?
+        #handler.SourceXmlRPC,
 
         handler.UserAuth,
         handler.Config,
@@ -61,18 +57,18 @@ application = webapp.WSGIApplication(map(
         handler.Publish,
         handler.APIRoot,
 
-        handler.FormTest,
-        handler.UserDir,
-        handler.UserAction,
-        handler.UserAliases,
+        #handler.FormTest,
+        #handler.UserDir,
+        #handler.UserAction,
+        #handler.UserAliases,
 
-        handler.AliasTemplate,
-        handler.UserTemplate,
-        handler.DocumentTemplate,
+        #handler.AliasTemplate,
+        #handler.UserTemplate,
+        #handler.DocumentTemplate,
 
-        handler.AliasDir,
-        handler._AliasDirDjango,
-        handler.AliasApplication,
+        #handler.AliasDir,
+        #handler._AliasDirDjango,
+        #handler.AliasApplication,
 
         #handler.SourcePage,
 
@@ -91,6 +87,7 @@ def webapp_main():
     #from gaesessions import SessionMiddleware
     #run_wsgi_app(SessionMiddleware(application))
     run_wsgi_app(application)
+
 
 if __name__ == "__main__":
     webapp_main()
