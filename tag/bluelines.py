@@ -1,16 +1,16 @@
+import logging
 import _conf
 
 # Third party
 from zope.interface import directlyProvides
 from breve.util import escape
 from breve.flatten import register_flattener
-from breve.tags import Namespace, Proto, Tag, flatten_proto
+from breve.tags import Namespace, Proto, flatten_proto
 
 # Bl global
 from interface import IBlueLinesXML
+from tag import atom, flatten_tag, Tag
 
-# BL local
-from tag import atom, flatten_tag
 
 
 xmlns = ''

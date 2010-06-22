@@ -29,6 +29,9 @@ class AbstractConfiguration(db.Model):
     from component(s). May be None to use defaults.
     """
 
+    def __repr__(self):
+        return "%s(%r)" % (self.__class__.__name__, self.key().name())
+
 class BuilderConfiguration(AbstractConfiguration):
     implements(interface.IBuilderConfig)
     builder = db.StringProperty(required=True)

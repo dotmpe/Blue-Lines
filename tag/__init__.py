@@ -1,7 +1,19 @@
 """
 Breve based DOM.
 """
-from breve.tags import quoteattrs, flatten
+from breve.tags import quoteattrs, flatten, Tag
+
+
+
+class Tag(Tag):
+    # HACK: fix attr values always str
+    def __init__(self, *args, **kwds):
+        super(Tag, self).__init__(*args, **kwds)
+        self.attrs.update([(k,str(v)) for k,v in self.attrs.items()])
+
+    def __call__(self, *args, **kwds):
+        self.attrs.update([(k,str(v)) for k,v in kwds.items()])
+        return super(Tag, self).__call__(*args, **kwds)
 
 
 def flattened_tags ( o ):

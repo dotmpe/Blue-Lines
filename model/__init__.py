@@ -9,8 +9,7 @@ from gate import compy
 from interface import *
 
 # BL local
-from source import Source, SourceInfo, Resource, \
-        key as source_key
+from source import Source, SourceInfo, Resource
 from user import User#, UserSession
 from alias import Alias, SiteAlias, UserAlias, Membership
 from config import BuilderConfiguration, PublishConfiguration,\
@@ -52,6 +51,7 @@ def fetch_instance(iface, id, parent=None):
         "Need Interface not, %s" % type(iface)
     assert isinstance(id, long) or isinstance(id, basestring)        
     model = components.lookup1(iface, IModel)
+    #logger.info(['fetch_instance', model, id, parent])
     if isinstance(id, basestring):
         return model.get_by_key_name(id, parent)
     else:
@@ -74,6 +74,10 @@ class Result:
         self.schema = schema
         self.value = value
         self.props = props
+
+    def __repr__(self):
+        return "[IQuery for %s with %s : %r]" % (
+                    self.schema.getName(), self.props, self.value,)
 
 class Results(Result):
     def __init__(self, schema, items, **props):
@@ -111,6 +115,14 @@ def query(schema, id, parent=None, **props):
         assert IQuery.providedBy(q)
         return q
 
+def single_result(q):
+    if q.value:
+        if isinstance(q.value, list):
+            assert len(q.value) == 1, "Multiple %s for %s %s" % (
+                    q.schema, id, props)
+            return q.value[0]
+        return q.value
+    return
 
 def _old():
     # fetch single alias

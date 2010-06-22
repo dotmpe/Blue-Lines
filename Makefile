@@ -11,6 +11,9 @@ srv2:
 dev:
 	dev_appserver.py ./ -a iris -d --datastore_path=.tmp/dev_appserver.datastore
 
+dev2:
+	dev_appserver.py ./ -a iris -p 8088 -d --datastore_path=.tmp/dev_appserver.datastore
+
 test:
 	python test/main.py
 
