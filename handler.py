@@ -643,7 +643,7 @@ class Alias(DuBuilderPage):
         """
         List all or find one or any of kind Alias.
         """
-        return api.fetch_alias(id, handle=handle)
+        return api.find_alias(id, handle=handle)
 
     @http_qwds(':v',':l',':unicode', 'handle:unicode',
             'proc-config:str','public:bool','remote-path:str',
@@ -777,15 +777,7 @@ class Config(AbstractConfig):
             parent = api.find_config(self._schema[''], name)
             name = subname
             props.update(dict(parent = parent))
-        c = api.find_config(schema, name, **props)
-        if interface.IQuery.providedBy(c):
-            return c
-        else:
-            c.delete()
-            # TODO: return delete msg
-            return c
-
-
+        return api.delete_config(schema, name)
 
 
 class Stat(DuBuilderPage):

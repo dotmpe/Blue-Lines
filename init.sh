@@ -53,8 +53,8 @@ init_pub_config()
 }
 init_alias()
 {
-#curl $CURL/alias -F handle="Blue Lines" 
-#if test $? -ge 1; then
+curl $CURL/alias/Blue%20Lines
+if test $? -ge 1; then
     curl $CURL/alias \
         -F handle="Blue Lines" \
         -F "default-title"="Blue Lines" \
@@ -66,33 +66,57 @@ init_alias()
 #        -F "remote-path"="http://iris:8088" 
 #    -F default-pub-config="blue-lines-html" \
     echo "Initialized alias:Blue Lines"
-#fi;        
+fi;        
+curl $CURL/alias/Sandbox
+if test $? -ge 1; then
+    curl $CURL/alias \
+        -F handle="Sandbox" \
+        -F "default-title"="Sandbox" \
+        -F public=True \
+        -F "proc-config"="bl,bluelines" \
+        -F "default-page"=welcome \
+        -F "default-leaf"=main 
+    echo "Initialized alias:Sandbox"
+fi;        
 }
-
+delete_all()
+{
+    curl $CURL_/alias/_/Sandbox -X DELETE
+    curl $CURL_/alias/_/Blue%20Lines -X DELETE
+    curl $CURL/config/bl/process/bluelines -X DELETE
+    curl $CURL/config/bl/publish/html -X DELETE
+    curl $CURL/config/bl -X DELETE
+}
+test_fetch()
+{
+    curl $CURL_/alias/_/Sandbox
+    curl $CURL_/alias/_/Blue%20Lines
+    curl $CURL_/config/bl/process/bluelines 
+    curl $CURL_/config/bl/publish/html 
+    curl $CURL_/config/bl 
+}
 #CURL="-b .cookie.jar -f -o /dev/null http://iris:8080/0.1/dubl"
 if test "$1" == 'dev'; then
     CURL_="-b .cookie.jar http://iris:8080/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
-    do_dev_login
-    do_dev_login # first-run bug in GAE-dev, module not loaded
+    #do_dev_login # first-run bug in GAE-SDK, module not loaded
+    #do_dev_login
 else
     CURL_="-b .cookie.jar http://blue-lines.appspot.com/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
     do_ga_login
 fi;
-#curl $CURL/alias/_/Blue%20Lines
-#curl $CURL_/alias/_/Blue%20Lines -X DELETE
-#curl $CURL/config/bl/process/bluelines -X DELETE
-#curl $CURL/config/bl/publish/html -X DELETE
-#curl $CURL/config/bl -X DELETE
-#init_build_config
-#init_proc_config
-#init_pub_config
-#init_alias
+#delete_all
+#test_fetch
+init_build_config
+init_proc_config
+init_pub_config
+init_alias
+#test_fetch
 curl $CURL/process \
     -F unid="~Blue Lines/ReadMe" 
+exit
 #    --data-urlencode rst@"ReadMe.rst" \
-#
 #curl $CURL/publish \
 #    -F unid="~Blue Lines/ReadMe" \
 #    -F format=bl-html

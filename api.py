@@ -31,7 +31,6 @@ from model.config import BuilderConfiguration, \
 
 logger = logging.getLogger(__file__)
 
-### Indempotent methods (queries)
 
 ## User
 
@@ -87,15 +86,6 @@ def new_or_existing_ga(user, alias_suggestion=None):
 
 ## Alias
 
-def _singleFetch(q):
-    if q.value:
-        if isinstance(q.value, list):
-            assert len(q.value) == 1, "Multiple %s for %s %s" % (
-                    q.schema, id, props)
-            return q.value[0]
-        return q.value
-    return
-
 def query_alias(id, **props):
     "Query for Alias. "
     q = model.query(interface.IAlias, id, **props)
@@ -107,7 +97,7 @@ def fetch_alias(id, **props):
     q = query_alias(id, **props)
     singleFetch = id or ('handle' in props and not props.get('handle').endswith('%'))
     if singleFetch and interface.IQuery.providedBy(q):
-        return _singleFetch(q)
+        return model.single_result(q)
     return q
 
 def find_alias(id, handle=None):
@@ -121,6 +111,8 @@ def find_alias(id, handle=None):
 def delete_alias(id, handle=None):
     a = find_alias(id, handle)
     a.delete()
+    if not id: id = a.key().id()
+    if not handle: handle = a.handle
     return model.Result(interface.IAlias,None,msg="alias (%s) %s deleted" %
             (id,handle),handle=handle,id=id)
 
@@ -155,104 +147,7 @@ def all_aliases(user, **fetch):
 #def alias_from_path(unid):
 #    return alias_from_handle(unid.split('/')[0][1:])
 
-
-## Configuration
-
-def query_config(schema, name, **props):
-    q = model.query(schema, name, **props)
-    logging.info("%s (%s) %s : %r", schema.getName(), name, props, q)
-    return q
-
-def fetch_config(schema, name, **props):
-    q = query_config(schema, name, **props)
-    if name and interface.IQuery.providedBy(q):
-        return _singleFetch(q)
-    return q
-
-def find_config(schema, name, **props):
-    i = fetch_config(schema, name, **props)
-    if not i:
-        raise exception.NotFound("No %s %r" % (schema.getName(),name))
-    assert isinstance(i, model.config.AbstractConfiguration), i
-    return i
-
-
-## Source
-
-
-### Non-Indempotent methods (mutating)
-
-## Configuration
-
-def _new_config(conf_name, kind=None, **props):
-    if not conf_name:
-        conf_name = str(nodes.make_id(props['title']))
-    if not kind:            
-        if 'writer' in props:
-            #assert 'builder_config' in props
-            kind = PublishConfiguration
-        elif 'builder' in props:
-            kind = BuilderConfiguration
-        #else:            
-        #    kind = ProcessConfiguration
-    if not kind:
-        raise KeyError, "Missing parameter to determine Configuration kind. "
-    if kind == BuilderConfiguration:
-        assert 'builder' in props
-    elif kind == ProcessConfiguration:
-        #assert 'builder_config' in props
-        assert props.get('parent','')
-    elif kind == PublishConfiguration:
-        assert 'writer' in props
-        assert props.get('parent','')
-        #assert 'builder_config' in props
-    #parent = None
-    #if 'builder_config' in props:
-    #    parent = BuilderConfiguration\
-    #            .get_by_key_name(props['builder_config'])
-    #    assert parent, "No such builder-config: %(builder_config)s" % props
-    #    del props['builder_config'] 
-    c = kind(key_name=conf_name, **props)
-    return c
-
-def new_config(conf_name, kind, **props):
-    conf = _new_config(conf_name, kind, **props)
-    prsr = util.OptionParser()
-    prsr.init_for_config(conf)
-    conf.settings = prsr.get_default_values()
-    return conf
-
-#def new_builder_config(name, **props):
-#    kind = BuilderConfiguration 
-#    assert 'builder' in props
-#    return _new_config(name, kind, **props)
-#
-#def new_process_config(name, **props):
-#    kind = ProcessConfiguration
-#    assert 'builder_conf' in props
-#    return _new_config(name, kind, **props)
-#
-#def new_publish_config(name, **props):
-#    kind = PublishConfiguration
-#    assert 'builder_conf' in props
-#    assert 'writer' in props
-#    return _new_config(name, kind, **props)
-
-
-def update_config(conf, **props):
-    prsr = util.OptionParser()
-    prsr.init_for_config(conf)
-    cfgkeys = [k for k in dir(prsr.get_default_values()) if not k.startswith('_')]
-    propkeys = props.keys()
-    for k in propkeys:
-        if not k in cfgkeys:
-            del props[k]
-            logging.error("Unknown or illegal setting %r for %r, ignored", k, conf)
-    for setting, error in prsr.update_valid(conf.settings, **props):
-        logging.error("Error in setting %s: %s", setting, error)
-
-
-## Alias
+## Alias (mutating)
 
 def new_alias(proc_config=None, **props):
     klass = Alias
@@ -332,6 +227,90 @@ def new_or_update_alias(user, id, **props):
                 id, auth.email)
         #assert id and isinstance(id, numbers.Number), "Need numeric ID, not %s." % id
     return alias
+
+
+
+## Configuration
+
+def query_config(schema, name, **props):
+    q = model.query(schema, name, **props)
+    logging.info("%s (%s) %s : %r", schema.getName(), name, props, q)
+    return q
+
+def fetch_config(schema, name, **props):
+    q = query_config(schema, name, **props)
+    if name and interface.IQuery.providedBy(q):
+        return model.single_result(q)
+    return q
+
+def find_config(schema, name, **props):
+    assert name and isinstance(name, basestring) and not name.endswith('%'), name
+    i = fetch_config(schema, name, **props)
+    if not i:
+        raise exception.NotFound("No %s %r" % (schema.getName(),name))
+    assert isinstance(i, model.config.AbstractConfiguration), i
+    return i
+
+
+## Configuration (mutating)
+
+def delete_config(schema, name):
+    assert name and isinstance(name, basestring) and not name.endswith('%'), name
+    c = find_config(schema, name)
+    c.delete()
+    return model.Result(interface.IConfig, None,
+            msg="%s %s deleted" % (schema.getName(), name), 
+            schema=schema, name=name)
+
+def _new_config(conf_name, kind=None, **props):
+    if not conf_name:
+        conf_name = str(nodes.make_id(props['title']))
+    if not kind:            
+        if 'writer' in props:
+            #assert 'builder_config' in props
+            kind = PublishConfiguration
+        elif 'builder' in props:
+            kind = BuilderConfiguration
+        #else:            
+        #    kind = ProcessConfiguration
+    if not kind:
+        raise KeyError, "Missing parameter to determine Configuration kind. "
+    if kind == BuilderConfiguration:
+        assert 'builder' in props
+    elif kind == ProcessConfiguration:
+        #assert 'builder_config' in props
+        assert props.get('parent','')
+    elif kind == PublishConfiguration:
+        assert 'writer' in props
+        assert props.get('parent','')
+        #assert 'builder_config' in props
+    #parent = None
+    #if 'builder_config' in props:
+    #    parent = BuilderConfiguration\
+    #            .get_by_key_name(props['builder_config'])
+    #    assert parent, "No such builder-config: %(builder_config)s" % props
+    #    del props['builder_config'] 
+    c = kind(key_name=conf_name, **props)
+    return c
+
+def new_config(conf_name, kind, **props):
+    conf = _new_config(conf_name, kind, **props)
+    prsr = util.OptionParser()
+    prsr.init_for_config(conf)
+    conf.settings = prsr.get_default_values()
+    return conf
+
+def update_config(conf, **props):
+    prsr = util.OptionParser()
+    prsr.init_for_config(conf)
+    cfgkeys = [k for k in dir(prsr.get_default_values()) if not k.startswith('_')]
+    propkeys = props.keys()
+    for k in propkeys:
+        if not k in cfgkeys:
+            del props[k]
+            logging.error("Unknown or illegal setting %r for %r, ignored", k, conf)
+    for setting, error in prsr.update_valid(conf.settings, **props):
+        logging.error("Error in setting %s: %s", setting, error)
 
 
 

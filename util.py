@@ -91,7 +91,7 @@ def do_basic_auth(basic_auth, dev=False):
         return api.new_or_existing(obj)
 
     elif authserv == 'alias':
-        alias = api.find_alias(name)
+        alias = api.find_alias(None,name)
         keys = (tuple(passwd.split(','))+2*('',))[0:3]
         if alias:
             access_key, process_key, update_key = keys
@@ -474,7 +474,7 @@ def init_alias(method):
                 alias_id = unid[1:p]
             else:
                 raise ValueError, "Need alias_id or unid to initialize Alias kind. "
-            alias = api.find_alias(alias_id)
+            alias = api.find_alias(None,alias_id)
             if not alias:
                 new = qwds.get('new-alias', None)
                 if not new or new.lower() not in ('yes', 'true'):
