@@ -48,8 +48,15 @@ def conv_version(arg):
     # XXX
     return arg
 
+def conv_null_or_id(arg):
+    if arg == '_':
+        return None
+    assert arg.isdigit(), arg
+    return du_long(arg)
+
 data_convertor.update(dict(
     v=conv_version,
+    l=conv_null_or_id,
 ))
 
 
@@ -356,17 +363,18 @@ def http_qwds(*fields, **kwds):
                 if type(data) == type(None) or idx >= argcnt: break
                 value = None
                 try:
-                    value = aspec[idx](data)
+                    value = aspec[idx](urllib.unquote(data))
                 except (TypeError, ValueError), e:
                     # TODO: report warning in-document
                     logger.warning(e)
-                if value: # replace argument
-                    args = args[:idx] + (value,) + args[idx+1:]
+                # replace argument
+                args = args[:idx] + (value,) + args[idx+1:]
             logger.debug("Converted arguments %s", args)
             # take keyword arguments from GET query or POST entity
             items = []
-            if qwd_method == 'auto':
-                items = getattr(self.request, self.request.method).items()
+            m = self.request.method
+            if qwd_method == 'auto' and m in ('POST','GET'):
+                items = getattr(self.request, m).items()
             elif qwd_method == 'both' or qwd_method.lower() == 'get':
                 items += self.request.GET.items()
             if qwd_method == 'both' or qwd_method.lower() == 'post':

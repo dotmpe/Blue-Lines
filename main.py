@@ -18,6 +18,7 @@ bluelines = server.BlueLines(model.source.SourceStorage(), [
     ], [
         _conf.HOST,
         _conf.ALTHOST,
+        'blue-lines.appspot.com',
         'dotmpe.com',
         'dotmpe.htd',
     ] )

@@ -51,7 +51,7 @@ class BlueLinesHandler(webapp.RequestHandler):
             auth = 'alias'
             # XXX: alias does not exist yet
             if not alias_id: alias_id = client[0]
-            alias = find_alias(alias_id)
+            alias = find_alias(None,alias_id)
             logging.info([alias_id, alias])
             if alias:
                 client = alias
@@ -67,7 +67,7 @@ class BlueLinesHandler(webapp.RequestHandler):
         elif isinstance(client, model.user.User):
             auth = 'user'
             if alias_id:
-                alias = find_alias(alias_id)
+                alias = find_alias(None,alias_id)
                 if not alias:
                     #
                     msg = "Unknown alias. "
@@ -553,7 +553,7 @@ class StaticPage(DuBuilderPage):
     @mime
     #@connegold
     def get(self, doc_name, **params):
-        alias = api.find_alias('Blue Lines')
+        alias = api.find_alias(None,'Blue Lines')
         #alias = api.new_or_existing_alias('blue',
         #        proc_config='blue-lines',
         #        remote_path=BASE_URL)
@@ -576,7 +576,7 @@ class StaticPage(DuBuilderPage):
             assert not doc.transform_messages, map(lambda x:x.astext(),
                     doc.transform_messages)
         # Now render the result into a BL page 
-        format = 'bl-html'
+        format = 'html'
         return mediatype_for_extension(format),\
             self.server.publish(unid, format)
 
@@ -610,111 +610,95 @@ class UserAuth(DuBuilderPage):
     def get(self, v):
         self._login()
 
-    def post(self, v):
-        props = dict(map(lambda p:(str(p[0]),p[1]),getattr(self.request,
-            self.request.method).items()))
+    @http_qwds(':v','email:str','passwd:str','admin:bool')
+    def post(self, v, **props):
         self._login(**props)
 
-    def _login(self, Email=None, Passwd=None, **props):
+    def _login(self, email=None, passwd=None, **props):
         self.response.headers['Content-Type'] = 'text/plain'
         user = users.get_current_user()
         if not user:
-            appname = "blue-lines"
-            cookie = gauth.do_auth(appname, Email, Passwd)
-            #gauth.get_gae_cookie(appname, auth_token)
-            self.response.headers['Set-Cookie'] = cookie
-        else:            
-            self.response.out.write(str(user)+chars.CRLF)
-            self.response.out.write(users.create_logout_url(self.request.uri))
-
-    def _login_old(self, Email=None, Passwd=None, **props):
-        self.response.headers['Content-Type'] = 'text/plain'
-        user = users.get_current_user()
-        if not user:
-            login_url = users.create_login_url(self.request.uri)
-            if not login_url.startswith('http'):
-                login_url = _conf.BASE_URL + login_url
-            login_query = urlparse.urlparse(login_url).query
-            props.update(dict(user=Email, Passwd=Passwd))
-            props.update(cgi.parse_qsl(login_query))
-            #logger.info([login_url, login_query, props])
-            req = urllib2.Request(login_url, urllib.urlencode(props))
-            #req = urlfetch.fetch(login_url, urllib.urlencode(props))
-            resp = None
-            try:
-                #pass
-                resp = util.get_opener().open(req)
-            except Exception, e:
-                logging.critical([e, type(e), dir(e), repr(e), e.args, e.message])
-            if resp:
-                cookie = resp.info().get('Set-Cookie', '')
-                if cookie:
-                    self.response.headers['Set-Cookie'] = cookie
-                else:
-                    self.set_status(403)
-                self.response.out.write(str(resp.headers)+chars.CRLF)
-                self.response.out.write(resp.read())
-            elif Email:
-                self.set_status(403)
-            else:
+            if not email and not passwd:
                 self.set_status(401)
-            #resp = urllib2.urlopen(login_url, urllib.urlencode(props))
-            return
-        else:
+                return
+            appname = "blue-lines"
+            cookie = gauth.do_auth(appname, email, passwd, self.is_devhost(),
+                    **props)
+            if not cookie:
+                self.set_status(403)
+            else:                
+                self.response.headers['Set-Cookie'] = cookie
+        else: 
             self.response.out.write(str(user)+chars.CRLF)
             self.response.out.write(users.create_logout_url(self.request.uri))
 
 
 class Alias(DuBuilderPage):
-    pattern = API + '/alias/?([0-9]+)?'
+    pattern = API + '/alias/?([_0-9]+)?/?(.+)?'
 
-    @http_qwds(':v',':long','handle:unicode')
+    @http_qwds(':v',':l',':unicode')
     @web_auth
     @out(interface.IBlueLinesXML, 'api')
-    def get(self, user, v, id, handle=None):
+    def get(self, user, v, id, handle):
         """
         List all or find one or any of kind Alias.
         """
         return api.fetch_alias(id, handle=handle)
 
-    @http_qwds(':v',':long','handle:unicode','proc-config:str','public:bool',
-            'remote-path:str',
+    @http_qwds(':v',':l',':unicode', 'handle:unicode',
+            'proc-config:str','public:bool','remote-path:str',
             'default-title:unicode','default-home:unicode','default-leaf:unicode',
-            qwd_method='both')
+            )#qwd_method='both')
     @web_auth
     @out(interface.IBlueLinesXML, 'api')
-    def post(self, user, v, id, **props):
+    def post(self, user, v, id, handle_=None, **props):
         """
-        Create new or update specified Id.
+        Create new or update exists Alias.
         """
+        if handle_:
+            props.update(dict(handle=handle_))
         return api.new_or_update_alias(user, id, **props)
 
-    @http_qwds(':v',':long')
+    @http_qwds(':v',':l',':unicode')
     @web_auth
     @out(interface.IBlueLinesXML, 'api')
-    def put(self, user, v, id):
+    def put(self, user, v, id, handle_, **props):
         """
-        Create or update new or existing Alias.
+        Create new or update existing Alias.
         """
+        if handle_:
+            props.update(dict(handle=handle_))
         return api.new_or_update_alias(user, id, **props)
 
+    @http_qwds(':v',':l',':unicode')
+    @web_auth
+    @out(interface.IBlueLinesXML, 'api')
+    def delete(self, user, v, id, handle):
+        """
+        Delete existing Alias.
+        """
+        return api.delete_alias(id, handle)
+    
 
 class AbstractConfig(DuBuilderPage):
 
     def _new_or_update(self, user, name, schema=None, settings=None, **props):
         if not name and not props.get('title', None):
             raise KeyError, "Either a URI or Title parameter is required. "
-        builder_config = props.get('builder_config', '')
+        builder_config = props.get('builder_config', None)
         if builder_config:
             #parent = api.fetch_config(interface.IBuilderConfig, builder_config)
-            parent = db.Key.from_path('BuilderConfiguration', builder_config)
-            props.update(dict(parent=parent))
-        conf = api.fetch_config(schema, name, **props)
+            builder_config = db.Key.from_path('BuilderConfiguration', builder_config)
+            props.update(dict(parent=builder_config))
+            del props['builder_config']
+        conf = api.fetch_config(schema, name, parent=builder_config)
         if interface.IQuery.providedBy(conf):
             return conf
         if not conf:
             props.update(dict(owner=user))
-            kind = components.queryAdapter(schema, interface.IModel)
+            kind = components.lookup1(schema, interface.IModel)
+            #kind = components.queryAdapter(schema, interface.IModel)
+            assert kind, (schema, name, kind)
             conf = api.new_config(name, kind, **props)
             if settings: # XXX: accept pickle without validation?
                 conf.settings = loads(settings)
@@ -751,33 +735,56 @@ class AbstractConfig(DuBuilderPage):
 
 
 class Config(AbstractConfig):
-    pattern = API + '/config/(builder|processor|publisher)/?([-a-z0-9]+)?'
+    pattern = API + '/config/([-_a-z0-9]+)/?(process|publish)?/?([-_a-z0-9]+)?'
 
     _schema =  {
-            'builder': interface.IBuilderConfig,
-            'processor': interface.IProcessConfig,
-            'publisher': interface.IPublishConfig, }
+            '': interface.IBuilderConfig,
+            'process': interface.IProcessConfig,
+            'publish': interface.IPublishConfig, }
 
-    @http_qwds(':v',':str', ':str', title='str', writer='str', builder='str')
+    @http_qwds(':v',':str',':str',':str',title='str', writer='str', builder='str')
     @web_auth
     @out(interface.IBlueLinesXML, 'api')
-    def get(self, user, v, kind, name=None, **props):
+    def get(self, user, v, name, kind=None, subname=None, **props):
+        if not kind: kind=''
         schema = self._schema[kind]
+        if subname:
+            parent = api.find_config(self._schema[''], name)
+            name = subname
+            props.update(dict(parent = parent))
         return api.find_config(schema, name, **props)
 
-    @http_qwds(':v', ':str', ':str', 'title:unicode', 'settings:pickle',
+    @http_qwds(':v',':str',':str',':str','title:unicode', 'settings:pickle',
             'builder:str', 'builder-config:str', 'writer:str')
     @web_auth
     @out(interface.IBlueLinesXML, 'api')
-    def post(self, user, v, kind, name=None, **props):
+    def post(self, user, v, name, kind='', subname=None, **props):
+        if not kind: kind=''
         schema = self._schema[kind]
+        if subname:
+            parent = api.find_config(self._schema[''], name)
+            name = subname
+            props.update(dict(parent = parent))
         return self._new_or_update(user, name, schema, **props)
 
-    @http_qwds(':str', 'title:unicode', 'values:pickled')
+    @http_qwds(':v',':str',':str',':str')
     @web_auth
     @out(interface.IBlueLinesXML, 'api')
-    def put(self, user, name=None, values=None, title=None, **props):
-        raise NotImplemented
+    def delete(self, user, v, name, kind=None, subname=None, **props):
+        if not kind: kind=''
+        schema = self._schema[kind]
+        if subname:
+            parent = api.find_config(self._schema[''], name)
+            name = subname
+            props.update(dict(parent = parent))
+        c = api.find_config(schema, name, **props)
+        if interface.IQuery.providedBy(c):
+            return c
+        else:
+            c.delete()
+            # TODO: return delete msg
+            return c
+
 
 
 

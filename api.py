@@ -87,23 +87,42 @@ def new_or_existing_ga(user, alias_suggestion=None):
 
 ## Alias
 
-def fetch_alias(id, handle=None, **props):
-    q = model.query(interface.IAlias, id, handle=handle, **props)
-    if id and interface.IQuery.providedBy(q):
-        if q.value:
-            return q.value
-        #raise exception.NotFound("Alias %s" % id)Q
-        return
+def _singleFetch(q):
+    if q.value:
+        if isinstance(q.value, list):
+            assert len(q.value) == 1, "Multiple %s for %s %s" % (
+                    q.schema, id, props)
+            return q.value[0]
+        return q.value
+    return
+
+def query_alias(id, **props):
+    "Query for Alias. "
+    q = model.query(interface.IAlias, id, **props)
+    logging.info("IAlias (%s) %s : %s", id, props, q)
     return q
 
-def find_alias(handle=None):
-    i = fetch_alias(None, handle)
+def fetch_alias(id, **props):
+    "Query for and fetch Alias. "
+    q = query_alias(id, **props)
+    singleFetch = id or ('handle' in props and not props.get('handle').endswith('%'))
+    if singleFetch and interface.IQuery.providedBy(q):
+        return _singleFetch(q)
+    return q
+
+def find_alias(id, handle=None):
+    "Return Alias instance or fail. "
+    i = fetch_alias(id, handle=handle)
     if not i:
-        raise exception.NotFound("Alias %s" % name)
-    if handle and not handle.endswith('%'):
-        if isinstance(i.value, list) and i.value:
-            return i.value[0]
+        raise exception.NotFound("No Alias %r (%s)" % (handle, id))
+    assert isinstance(i, model.Alias), i
     return i
+
+def delete_alias(id, handle=None):
+    a = find_alias(id, handle)
+    a.delete()
+    return model.Result(interface.IAlias,None,msg="alias (%s) %s deleted" %
+            (id,handle),handle=handle,id=id)
 
 
 #@util.fetch
@@ -139,19 +158,24 @@ def all_aliases(user, **fetch):
 
 ## Configuration
 
-def fetch_config(schema, name, **props):
+def query_config(schema, name, **props):
     q = model.query(schema, name, **props)
+    logging.info("%s (%s) %s : %r", schema.getName(), name, props, q)
+    return q
+
+def fetch_config(schema, name, **props):
+    q = query_config(schema, name, **props)
     if name and interface.IQuery.providedBy(q):
-        if q.value:
-            return q.value
-        return
+        return _singleFetch(q)
     return q
 
 def find_config(schema, name, **props):
     i = fetch_config(schema, name, **props)
     if not i:
-        raise exception.NotFound("Config %s" % name)
+        raise exception.NotFound("No %s %r" % (schema.getName(),name))
+    assert isinstance(i, model.config.AbstractConfiguration), i
     return i
+
 
 ## Source
 
@@ -165,13 +189,12 @@ def _new_config(conf_name, kind=None, **props):
         conf_name = str(nodes.make_id(props['title']))
     if not kind:            
         if 'writer' in props:
-            assert 'builder_config' in props
+            #assert 'builder_config' in props
             kind = PublishConfiguration
-        elif 'builder_config' in props:
-            kind = ProcessConfiguration
-        else:            
-            assert 'builder' in props
+        elif 'builder' in props:
             kind = BuilderConfiguration
+        #else:            
+        #    kind = ProcessConfiguration
     if not kind:
         raise KeyError, "Missing parameter to determine Configuration kind. "
     if kind == BuilderConfiguration:
@@ -254,8 +277,8 @@ def new_alias(proc_config=None, **props):
 
 def new_alias_for(user):
     newalias = str(nodes.make_id(user.email.split('@')[0]))
-    assert not find_alias(newalias), "Primary alias in use for new user.. "
-    if not find_alias(newalias):
+    assert not find_alias(None,newalias), "Primary alias in use for new user.. "
+    if not find_alias(None,newalias):
         newalias = new_alias(user, newalias)
         return newalias
     else:
@@ -263,7 +286,7 @@ def new_alias_for(user):
             user.email()))
 
 def new_or_existing_alias(handle, **props):
-    alias = find_alias(handle)
+    alias = find_alias(None,handle)
     if not alias:
         alias = new_alias(handle=handle, **props)
         alias.put()
@@ -272,6 +295,10 @@ def new_or_existing_alias(handle, **props):
 def new_or_update_alias(user, id, **props):
     if not id and not props.get('handle', None):
         raise KeyError, "Either an ID or handle is required. "
+    alias = fetch_alias(id, handle=props.get('handle', None))
+    if alias and not isinstance(alias, model.Alias):
+        assert interface.IQuery.providedBy(alias)
+        return alias
     proc_config = props.get('proc_config', None)
     if proc_config:
         builder_confname, proc_confname = proc_config.split(',')
@@ -281,18 +308,8 @@ def new_or_update_alias(user, id, **props):
         if interface.IQuery.providedBy(proc_config):
             assert False, "XXX"
         props.update(dict( owner=user, proc_config=proc_config, ))
-    alias = fetch_alias(id, **props)
-    if interface.IQuery.providedBy(alias):
-        if not alias.value:
-            alias = None
-        elif isinstance(alias.value, list):
-            if len(alias.value) > 1:
-                raise ""
-            alias = alias.value[0]
-        else:
-            return alias
     if not alias:
-        logging.info(props)
+        #logging.info(props)
         props.update(dict(owner=user))
         alias = new_alias(**props)
         alias.put()
@@ -300,7 +317,7 @@ def new_or_update_alias(user, id, **props):
         logging.info("New Alias prepared %r (%i)", alias.handle, id)
     else:            
         if not alias:
-            return exception.NotFound("Alias %r (%i)", props.get('handle', ''), id)
+            return exception.NotFound("No Alias %r (%i)", props.get('handle', ''), id)
         auth = getattr(alias, 'owner', user)
         if auth != user:
             raise exception.AccessError(

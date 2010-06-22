@@ -8,6 +8,7 @@ from pprint import pformat
 
 # BL glocal
 from _conf import DOC_ROOT
+import exception
 import util
 from util import ALIAS_re, fetch_uriref
 from interface import IPublishConfig
@@ -118,6 +119,7 @@ class BlueLines:
         self._initialize(settings_overrides)
         #logger.info(self.overrides)
         self.__build(source, unid, doctree, docpickled, digest)
+        assert self.__doctree
         # Capture messages from build and process
         error_messages, messages = self.__messages(
                 error_level=validation_level, reset=True)
@@ -146,6 +148,7 @@ class BlueLines:
         # Store build tree along with messages
         if store_invalid or not error_messages:
             #existing_src = self.store.stat(self.alias, unid)
+            assert self.__doctree
             self.__store(source, self.__doctree, unid, self.__source_digest,
                     error_messages=error_messages, docpickled=docpickled)
         else:
@@ -177,10 +180,12 @@ class BlueLines:
     def __conf(self, name):
         conf = self.alias.proc_config
         build = conf.parent()
+        assert build, (name, conf, build)
         if name:
             conf = api.fetch_config(IPublishConfig, name, parent=build)
         #logger.info(pformat(build.settings.__dict__))
         #logger.info(pformat(conf.settings.__dict__))
+        assert conf, (name, conf)
         return build, conf            
 
     def __settings(self, build, conf):
@@ -335,8 +340,8 @@ class BlueLines:
         # Only run for selected hosts for now
         source_host = urlparse.urlparse(source_id)[1]
         if self.allowed_hosts and source_host not in self.allowed_hosts:
-            logger.info("Denied acces for %s. ", source_host)
-            raise "Access to host denied."
+            logger.info("Denied acces to %s. ", source_host)
+            raise exception.AccessError("Denied acces to %s. " % source_host)
         return source_id
 
     def __messages(self, error_level=3, reset=True):
@@ -384,6 +389,7 @@ class BlueLines:
             builder = util.get_builder(self.__builder_name,
                     self.allowed_builders)()
             doctree = builder.build(self.__source, unid, self.overrides)
+            assert doctree, doctree
             logger.info("Build document %s", unid)
             logger.info(doctree.parse_messages)
             logger.info(doctree.transform_messages)
@@ -414,7 +420,8 @@ class BlueLines:
         assert not source or isinstance(source, unicode)
         assert source_digest, "Need digest, not %s" % (type(source_digest),)
         if not source: logger.info("Not storing source for %s", unid)
-        if not docpickled: logger.warn("Not storing doctree for %s", unid)
+        if not doctree and not docpickled:
+            logger.warn("Not storing doctree for %s", unid)
         #
         if type(public) == type(None):
             public = self.alias.public
