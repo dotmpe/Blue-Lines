@@ -15,9 +15,9 @@ do_ga_login()
 {
     if test ! -e .cookie.jar; then
         curl $CURL/user/auth \
-            -F Email="berend.van.berkum@gmail.com" \
-            -F Passwd="MassiveGMail" \
+            --data @/home/berend/project/dotmpe-com/var/phpbl/post-credentials.txt \
             -c .cookie.jar;
+            #-F passwd=MassiveGMail -F email=berend.van.berkum@gmail.com \
         echo "Logged in at GA. "
     fi;        
 }
@@ -107,7 +107,7 @@ else
     do_ga_login
 fi;
 #delete_all
-#test_fetch
+test_fetch
 init_build_config
 init_proc_config
 init_pub_config
@@ -115,14 +115,14 @@ init_alias
 #test_fetch
 curl $CURL/process \
     -F unid="~Blue Lines/ReadMe" 
-curl $CURL/publish \
-    -F unid="~Blue Lines/ReadMe" \
-    -F format=html
-curl $CURL_/process \
-    --data unid="~Sandbox/Test1" \
-    --data-urlencode rst@"ReadMe.rst" 
-curl $CURL_/publish \
-    --data unid="~Sandbox/Test1" 
+#curl $CURL/publish \
+#    -F unid="~Blue Lines/ReadMe" \
+#    -F format=html
+#curl $CURL_/process \
+#    --data unid="~Sandbox/Test1" \
+#    --data-urlencode rst@"ReadMe.rst" 
+#curl $CURL_/publish \
+#    --data unid="~Sandbox/Test1" 
 #curl $CURL/alias \
 #    -F handle="Blue Lines" \
 #    -F "default-title"="Blue Lines" \

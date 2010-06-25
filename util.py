@@ -108,7 +108,7 @@ def do_basic_auth(basic_auth, dev=False):
 
 ## Remote content utils
 
-PARAM_re = '%s\=([a-z0-9]+)'
+PARAM_re = '%s\=([-a-z0-9]+)'
 
 def get_opener(cookiejar=None, error_proc=True):
     opener = urllib2.OpenerDirector()
@@ -126,9 +126,9 @@ def get_opener(cookiejar=None, error_proc=True):
 
 def get_param(paramstr, name, default):
     assert name.isalnum()
-    m = re.compile(PARAM_re % name).match(paramstr)
+    m = re.compile(PARAM_re % name).search(paramstr)
     if m:
-        return m.group()
+        return m.group(1)
     return default
 
 def fetch_uriref(uriref, dt=None, etag=None, md5check=None):
@@ -147,6 +147,7 @@ def fetch_uriref(uriref, dt=None, etag=None, md5check=None):
         if e.code == 304:
             return 
         logger.critical([e, type(e), e.code])
+        assert e.code == 200, str(e.code) +' '+ e.message
     # XXX: res.geturl() == uriref ?
     contents = res.read()
     #if not contents:
@@ -162,7 +163,7 @@ def fetch_uriref(uriref, dt=None, etag=None, md5check=None):
     etag = info.get('ETag', None)
     md5sum = info.get('Content-MD5', '')
     if not md5sum:
-        md5sum = hashlib.md5(contents).hexdigest()
+        md5sum = hashlib.md5(contents.encode('utf-8')).hexdigest()
     if md5check:
         if md5sum == md5check:
             return

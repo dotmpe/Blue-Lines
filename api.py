@@ -104,6 +104,7 @@ def fetch_alias(id, **props):
 
 def find_alias(id, handle=None):
     "Return Alias instance or fail. "
+    assert id or handle, "Need Alias numeric ID or handle. "
     i = fetch_alias(id, handle=handle)
     if not i:
         raise exception.NotFound("No Alias %r (%s)" % (handle, id))

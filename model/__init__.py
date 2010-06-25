@@ -118,8 +118,8 @@ def query(schema, id, parent=None, **props):
 def single_result(q):
     if q.value:
         if isinstance(q.value, list):
-            assert len(q.value) == 1, "Multiple %s for %s %s" % (
-                    q.schema, id, props)
+            assert len(q.value) == 1, "Multiple %s for %s" % (
+                    q.schema, q.props)
             return q.value[0]
         return q.value
     return

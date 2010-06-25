@@ -115,9 +115,9 @@ def get_gae_cookie(appname, auth_token):
     logging.debug(response.headers)
 
     cookie = response.headers.get('set-cookie')
-    assert cookie and (cookie.startswith('ACSID') or cookie.startswith('SACSID')), (type(cookie),cookie)
-    #if cookie.startswith('S'):
-    #    cookie = cookie[1:]
+    assert cookie and (cookie.startswith('ACSID') or
+            cookie.startswith('SACSID')),\
+                    (type(cookie),cookie)
     return cookie.replace('; HttpOnly', '')
 
 def get_google_authtoken(appname, email_address, password):

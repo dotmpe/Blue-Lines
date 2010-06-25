@@ -46,6 +46,9 @@ class BlueLinesHandler(webapp.RequestHandler):
     def __init__(self):
         self.server = DuBuilderPage.server
 
+    def is_devhost(self):
+        return not self.request.host.endswith('.appspot.com')
+
     ## User session
     def start_session(self, client, alias_id):
         " Start user or alias session.  "
@@ -193,9 +196,6 @@ class AbstractXmlRPC(BlueLinesHandler):
             response.seek(0)
         rstr = response.read()
         return 'text/xml', rstr
-
-    def is_devhost(self):
-        return not self.request.host.endswith('.appspot.com')
 
 class SourceXmlRPC(AbstractXmlRPC):
     pattern = '()xmlrpc$'
@@ -609,9 +609,13 @@ class RstPage(DuBuilderPage):
         alias = api.find_alias(None, alias)
         unid = "~%s/%s" % (alias.handle, docname)
         #srcinfo = api.fetch_sourceinfo(alias, unid)
+        #if not srcinfo:
+        #    return self.not_found()
         self.server._reload(alias)
         #source = srcinfo.parent()
-        return 'text/html', self.server.publish(unid)
+        return 'text/html', self.server.publish(unid,
+                publish_conf=format or 'html')
+
 
 
 # Restfull API
@@ -634,13 +638,13 @@ class UserAuth(DuBuilderPage):
         user = users.get_current_user()
         if not user:
             if not email and not passwd:
-                self.set_status(401)
+                self.response.set_status(401)
                 return
             appname = "blue-lines"
             cookie = gauth.do_auth(appname, email, passwd, self.is_devhost(),
                     **props)
             if not cookie:
-                self.set_status(403)
+                self.response.set_status(403)
             else:                
                 self.response.headers['Set-Cookie'] = cookie
         else: 
@@ -809,11 +813,11 @@ class Stat(DuBuilderPage):
 class Process(DuBuilderPage):
     pattern = API + '/process'
 
-    @http_qwds(':v','rst:text','unid:unicode', qwd_method='both')
+    @http_qwds(':v','rst:text','unid:unicode','format:str',qwd_method='both')
     @web_auth
     @init_alias
     @connegold
-    def post(self, user, v, alias, rst=None, unid=None):
+    def post(self, user, v, alias, rst=None, unid=None, format=None):
         # XXX: alias access and source process privileges
         if unid and not isinstance(unid, basestring):
             raise TypeError, "Need UNID, not %s" % type(unid)
@@ -822,6 +826,12 @@ class Process(DuBuilderPage):
                 raise exception.ValueError, \
                         "You (%s) are not owner of Alias %r" % \
                         (user.email, alias.handle)
+        if alias.unid_includes_ext:
+            assert not format, \
+                    "Use extension, refer to doc for unid_includes_ext"
+        else:
+            assert format, "Need source format"
+            unid += format
         self.server._reload(alias)
         doctree, error_messages = self.server.process(rst, unid)
         return 'system-messages', error_messages

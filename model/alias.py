@@ -34,7 +34,22 @@ class Alias(polymodel.PolyModel):
 #    "Enable the SpecInfo tranform to override this on a per-document basis. "
 
     strip_extension = db.BooleanProperty(default=True)
+    """
+    If UNID includes format, remove it, this allows the format to change, 
+    while still keeping the UNID rewritable to an (remote) filename.
+    """
+    " (But only rst is supported at the moment. )"
+    " UNIDs may not include periods. "
     # FIXME: for references, but what about Id..
+    """
+    Source normally specs-format. 
+    There is only one source, and one format,
+    but normally the format is not included in the UNID.
+    It is stripped if present upon process.
+    However added upon remote-id rewrite.
+    The format may be altered
+    """
+    unid_includes_ext = db.BooleanProperty(default=True)
 
     public = db.BooleanProperty(default=False)
     "Wether contents may be displayed or listed publicly. "

@@ -162,22 +162,27 @@ class BlueLines:
         #self.__doctree = self.__source = self.__source_id = self.__source_digest = None
         return doctree, error_messages
 
-    def publish(self, unid, format=None, writer_settings_overrides={}):
+    def publish(self, unid, publish_conf=None):#, writer_settings_overrides={}):
         """
         Build Source if needed, render to ouput format.
         """
         assert ALIAS_re.match(unid), "Invalid aliased ID: %s " % unid
+        # Retrieve and build source:
         source = self.store.getinfo(self.alias, unid).next()
         self.__build(source, unid)
         builder = util.get_builder(self.__builder_name, self.allowed_builders)()
         logger.debug("Got request to publish %s", unid)
-        buildconf, pconf = self.__conf(format)
+        # Need name or __conf returns proc-conf:
+        assert publish_conf and isinstance(publish_conf, basestring), \
+                "Need publish-configuration name, not %s (%s). " % (
+                type(publish_conf), publish_conf)
+        buildconf, pconf = self.__conf(publish_conf)
         self.__doctree.settings = self.__settings(buildconf, pconf)
         #logger.info(pformat(self.__doctree.settings.__dict__))
+        # Render to output
         output = builder.render(self.__doctree, unid,
-                overrides=writer_settings_overrides,
+                #overrides=writer_settings_overrides,
                 writer_name=pconf.writer)
-        #                writer_name=format or 'dotmpe-html', )
         return output
 
     def __conf(self, name):
