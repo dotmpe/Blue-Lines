@@ -43,9 +43,9 @@ class Resource(db.Model):
     remote_id = db.LinkProperty(required=True)
     etag = db.StringProperty()
 
-class ResourceInfo(db.Model):
-    ""
-    last_update = db.DateTimeProperty(required=True)
-    mediatype = db.StringProperty(required=True)
+#class ResourceInfo(db.Model):
+#    ""
+#    last_update = db.DateTimeProperty(required=True)
+#    mediatype = db.StringProperty(required=True)
 
 

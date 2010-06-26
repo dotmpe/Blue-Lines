@@ -15,15 +15,21 @@ Ideas
   - I very much like to support the ``toctree`` from Sphinx into Blue Lines.
     Perhaps subdocs from docutils SVN is usable.
   - Note that there are also Du branches for nested markup and lossless rst
-  	writing.  
+    writing.  
   - A directive for Google charts.
   - A directive for embedded video.  
   - An easily extendible system for parsed entity references, similar to current
-  	RFC/PEP parsing. E.g. Wikipedia, Debian packages, Gnome bugzilla, Bitzi, 
-  	MusicBrainz, etc..
+    RFC/PEP parsing. E.g. Wikipedia, Debian packages, Gnome bugzilla, Bitzi, 
+    MusicBrainz, etc..
 
 ----
 
 .. testing include:
-.. include:: doc/nabu.rst
+
+.. include:: nabu.rst
+.. include:: ./nabu.rst
+
+.. include:: /doc/nabu.rst
+
+.. include:: ~Blue Lines/doc/nabu.rst
 

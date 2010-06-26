@@ -40,6 +40,11 @@ components.register([IConfig], IListSchema, '', IConfigList)
 components.register([IAlias], IListSchema, '', IAliasList)
 components.register([ISourceInfo], IListSchema, '', ISourceInfoList)
 
+# TODO: adapt model ('schema-instance') to XML instead of schema
+class IAliasModel(IModel): pass # XXX: implements/provides ISchema?
+class IStatModel(IModel): pass
+
+
 # Other datastruc instances
 class IBreveTree(interface.Interface): pass
 class IBreveXHTML(IBreveTree): pass

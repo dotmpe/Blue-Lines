@@ -581,10 +581,14 @@ def mime(method):
     @functools.wraps(method)
     def mime_deco(self, *args, **kwds):
         mediatype, media = method(self, *args, **kwds)
-        #assert mediatype in mediatypes,\
-        #        "Unknown mediatype %r.  " % mediatype
+        assert mediatype in mediatypes,\
+                "Unknown mediatype %r.  " % mediatype
         assert isinstance(media, basestring),\
                 "Need output data, not %s" % type(media)
+        logging.info("Serving %s bytes as %s", len(media), mediatype)
+        self.response.headers['MIME-Version'] = '1.0'
+        # XXX: associate content Id with output?
+        #self.response.headers['Content-ID'] = 
         self.response.headers['Content-Type'] = mediatype
         self.response.headers['Content-Length'] = "%d" % len(media)
         self.response.out.write(media)
@@ -615,11 +619,12 @@ def out(targetInterface, name=''):
         return mime(output_filter_deco)
     return output_filter_wrap
 
-def connegold(method):
+def conneg_old(method):
     "does not much of interest yet. serialize object instances. "
     @functools.wraps(method)
     def oldconneg_wrapper(self, *args, **kwds):
         content_type, content = method(self, *args, **kwds)
+        #logger.info([content_type, content])
         if content_type in extensions:
             format = content_type
             return extensions[format], content

@@ -1,4 +1,4 @@
-.PHONY: default update update-app update-docs clean clean-pyc test dev
+.PHONY: default update update-app update-docs clean clean-pyc test dev loc
 
 default:
 
@@ -32,8 +32,11 @@ update-docs:
 	var/media/nabu doc/ -r --server-url https://blue-lines.appspot.com/~blue/.xmlrpc
 	# TODO: nabu has no --quiet option
 
-# vim:noet: 
-.PHONY: loc
-loc:
-	wc -l *.py {extractor,decorator,model,tag}/*.py > $@
+loc: loc.txt
+	@echo Project has `cat $@.txt|grep total -|sed 's/total//'` Python Lines of Code.
 
+loc.txt: ./*.py */*.py
+	@wc -l *.py {extractor,decorator,model,tag}/*.py > $@
+
+
+# vim:noet: 

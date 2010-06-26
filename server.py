@@ -263,9 +263,11 @@ class BlueLines:
             elif info:
                 return True
             else:
-                return False
+                raise exception.NotFound(unid)
         else:
             return False
+        # TODO: adapt value, schema pair to model
+        #return components.queryAdapter([v,IStat],IModel)
 
     def getids(self, limit=100, offset=0):
         return model.SourceInfo.ancestor(self.alias).fetch(limit, offset)
@@ -416,7 +418,7 @@ class BlueLines:
                     self.allowed_builders)()
             doctree = builder.build(self.__source, unid, self.overrides)
             assert doctree, doctree
-            logger.info("Build document %s", unid)
+            logger.info("Built document %s", unid)
             logger.info(doctree.parse_messages)
             logger.info(doctree.transform_messages)
             encoding = builder.publisher.source.successful_encoding

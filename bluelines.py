@@ -68,7 +68,7 @@ class Document(builder.Builder):
     }
 
     extractors = [
-        (extractor.RecordDependencies, extractor.DependencyStorage),            
+        #(extractor.RecordDependencies, extractor.DependencyStorage),            
         #(reference.Extractor, reference.ReferenceStorage()),
         #(extractor.Contact
         #(extractor.docinfo, extractor.docinfo)

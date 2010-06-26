@@ -50,9 +50,28 @@ init_pub_config()
             -F template="var/du-html-template.txt" 
         echo "Initialized config:bl:html"
     fi;
+    curl $CURL/config/bl/publish/xml
+    if test $? -ge 1; then
+        curl $CURL/config/bl/publish/xml \
+            -F title="Docutils XML" \
+            -F writer="xml" 
+        echo "Initialized config:bl:xml"
+    fi;
 }
 init_alias()
 {
+curl $CURL/alias/BL%20Dev
+if test $? -ge 1; then
+    curl $CURL/alias \
+        -F handle="BL Dev" \
+        -F "default-title"="Blue Lines (dev)" \
+        -F public=True \
+        -F "proc-config"="bl,bluelines" \
+        -F "default-page"=welcome \
+        -F "default-leaf"=main \
+        -F "remote-path"="http://iris:8088" 
+    echo "Initialized alias:BL Dev"
+fi;        
 curl $CURL/alias/Blue%20Lines
 if test $? -ge 1; then
     curl $CURL/alias \
@@ -107,7 +126,7 @@ else
     do_ga_login
 fi;
 #delete_all
-test_fetch
+#test_fetch
 init_build_config
 init_proc_config
 init_pub_config
@@ -115,6 +134,8 @@ init_alias
 #test_fetch
 curl $CURL/process \
     -F unid="~Blue Lines/ReadMe" 
+curl $CURL/process \
+    -F unid="~BL Dev/ReadMe" 
 #curl $CURL/publish \
 #    -F unid="~Blue Lines/ReadMe" \
 #    -F format=html

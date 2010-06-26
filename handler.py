@@ -314,6 +314,7 @@ class UserDir(BlueLinesPage):
                 'aliases': api.all_aliases(user) }
 
 class UserApplication(DuBuilderPage):
+    # FIXME
     pattern = '%%7E([^/]+)/(application)\.?(%s)?$' % DuBuilderPage.DOC_EXT
 
     @http
@@ -334,6 +335,7 @@ class UserApplication(DuBuilderPage):
         return MIME_XHTML, self.server.publish(rst, None)
 
 class UserAction(BlueLinesPage):
+    # XXX
     pattern = '%7E/\.action$'
 
     @http_qwds('*')
@@ -349,6 +351,7 @@ class UserAction(BlueLinesPage):
             self.error(400)
 
 class UserAliases(BlueLinesPage):
+    # XXX
     " Tabulate existing aliases User has access to.  "
     pattern = '%7E/\.aliases$'
 
@@ -364,6 +367,7 @@ class UserAliases(BlueLinesPage):
         return 'text/plain', '\n'.join(vs)
 
 class AliasDir(BlueLinesPage):
+    # FIXME
     " Redirect to default document or render an index of recent updates. "
     pattern = '%7E([^/]+)/?$'
 
@@ -439,6 +443,7 @@ class Template(DuBuilderPage):
     pass
 
 class AliasTemplate(DuBuilderPage):
+    # FIXME
     """
     Template to create new Alias application document. At this stage there
     is only a list of values and a form processor. Docutils is partially used
@@ -503,6 +508,7 @@ class UserTemplate(DuBuilderPage):
 
 
 class AliasApplication(DuBuilderPage):
+    # FIXME
     """ Submit, amend, renew, or retract Alias application.
     """
     pattern = '%%7E([^/]+)/\.?(Application)\.?(%s)?$' % DuBuilderPage.ID
@@ -557,9 +563,9 @@ class AliasApplication(DuBuilderPage):
         return 'text/plain', ''
 
 
-class RstPage(DuBuilderPage):
+class LocalPage(DuBuilderPage):
     """
-    Publish a previously processed source document with UNID.
+    Render a previously processed source document with UNID.
     """
     pattern = '(%%7[Ee]|~)([^/]+)/(.*?)(\.%s)?$' % DuBuilderPage.ID
 
@@ -571,22 +577,21 @@ class RstPage(DuBuilderPage):
         if not alias:
             return self.not_found(self.request.uri)
         alias = api.find_alias(None, alias)
-        logging.info("found alias %s", alias)
         unid = "~%s/%s" % (alias.handle, docname)
         self.server._reload(alias)
         srcinfo = api.find_sourceinfo(alias, unid)
-        logging.info("found srcinfo %s", srcinfo)
         if not srcinfo:
             stat = self.server.stat(unid)
             if stat:
+                # FIXME..
                 taskqueue.add(url=API+'process', params={'unid':unid})
-                assert not "Queued.."
+                return 'text/plain', "Please wait for the document to be "\
+                        "processed. This happens once on every remote update. "
             else:
                 return self.not_found(unid)
-        #source = srcinfo.parent()
-        return 'text/html', self.server.publish(unid,
-                publish_conf=format or 'html')
-
+        if not format: format='html'
+        return mediatype_for_extension(format),\
+                self.server.publish(unid, publish_conf=format)
 
 
 class StaticPage(DuBuilderPage):
@@ -596,19 +601,11 @@ class StaticPage(DuBuilderPage):
     pattern = '([^~]*?)(\.%s)?$' % DuBuilderPage.ID
 
     @http_qwds(':str',':ext','expose_settings:bool', 'expose_specs:bool')
-    #@web_auth
-    #@dj_xht
     @mime
-    #@connegold
     def get(self, doc_name, format, **params):
         alias = api.find_alias(None,'Blue Lines')
-        #alias = api.new_or_existing_alias('blue',
-        #        proc_config='blue-lines',
-        #        remote_path=BASE_URL)
-        #if not os.path.exists(fn):
-        #    return self.not_found()
+        assert alias, "Blue Lines has not been initialized. "
         unid = "~Blue Lines/%s" % doc_name
-        #fn = os.path.join(DOC_ROOT, "%s.rst" % (doc_name))
         logger.info("StaticPage GET %s", unid)
         self.server._reload(alias)
         stat = self.server.stat(unid)
@@ -616,8 +613,6 @@ class StaticPage(DuBuilderPage):
             logger.info("StaticPage: %s needs (re)proc.", unid)
             # TODO: work in progress..
             #return self.multistep(API+'/process', self.request.uri)
-            #rst = open(fn, 'U').read().decode('utf8')
-            #params.update({'build':'bluelines.Document'})
             srcinfo = self.server.get(unid)
             doc, msgs = self.server.process(srcinfo, unid,
                     settings_overrides=params)
@@ -632,7 +627,11 @@ class StaticPage(DuBuilderPage):
 # Restfull API
 
 class APIRoot(DuBuilderPage):
+    """
+    Catch all API requests with no handler match.
+    """
     pattern = API + '.*'
+
 
 class UserAuth(DuBuilderPage):
     pattern = API + '/user/auth'
@@ -815,10 +814,12 @@ class Stat(DuBuilderPage):
 
     @http_qwds(':v','unid:unicode','digest:str')
     @web_auth
-    def get(self, user, v, unid='', digest=''):
-        # XXX: alias and source access privileges
+    @init_alias
+    #@out(interface.IBlueLinesXML, 'api')
+    @mime
+    def get(self, user, v, alias, unid='', digest=''):
         self.server._reload(alias)
-        return 'bool', self.server.stat((unid, digest)).next()[1]
+        return 'text/plain', str(self.server.stat(unid, digest))
 
 
 class Process(DuBuilderPage):
@@ -827,7 +828,7 @@ class Process(DuBuilderPage):
     @http_qwds(':v','rst:text','unid:unicode','format:str',qwd_method='both')
     @web_auth
     @init_alias
-    @connegold
+    @conneg_old
     def post(self, user, v, alias, rst=None, unid=None, format=None):
         # XXX: alias access and source process privileges
         if unid and not isinstance(unid, basestring):
@@ -855,17 +856,26 @@ class Publish(DuBuilderPage):
             qwd_method='both')
     @web_auth
     @init_alias
-    @connegold
+    @conneg_old
     def post(self, user, v, alias, unid='', format='html', config=None):
         # XXX: alias access and source process privileges
         if not unid or not isinstance(unid, basestring):
             raise TypeError, "Need UNID, not %s" % type(unid)
+        logger.info(alias)
         self.server._reload(alias)
         out = self.server.publish(unid, format)
+        logger.info(format)
         return format, out
 
+class Sources(DuBuilderPage):
+    "List UNID, digests for Alias and (partial) localname. "
+    pattern = API + '/source/([^/]+)/(.*)'
+    def get(self):
+        pass # TODO: IAliasDir
 
-
+class SourceInfo(DuBuilderPage):
+    " All info for UNID. "
+    pattern = API + ''
 
 # Util. handlers
 

@@ -75,26 +75,32 @@ class SourceStorage:
                 time=time, public=public, digest=digest, errors=errors ) 
         srcinfo.put()
         # Create SourceDependencies
-        #self.add_dependencies(alias, unid, [], reset=True, info=srcinfo,
-        #        doctree=doctree)
-        #logging.info("Added Source %s" % unid)
+        self.add_dependencies(alias, unid, [], reset=True, info=srcinfo,
+                doctree=doctree)
+        logging.info("Added Source %s" % unid)
         return src, srcinfo
 
     def add_dependencies(self, alias, unid, depids=[], reset=False, info=None,
             doctree=None):
         if not info:
             info = self.getinfo(alias, unid).next()
-        assert info, "Unknown %s (%s" % (unid, self.alias.handle)
+        assert info, "Unknown %s (%s)" % (unid, self.alias.handle)
         if not depids:
             if not doctree:
-                doctree = pickle.loads(info.parent().doctree)
-            #depids = [  for p in doctree.settings.record_dependencies ]
+                doctree = info.parent().doctree
+                assert doctree, (unid, doctree)
+                doctree = pickle.loads(doctree)
+            depids = [ p for p in doctree.settings.record_dependencies.list ]
+        logging.info(depids)
         deps = []            
         for src in depids:
             if notisinstance(src, db.Key):
                 src = key(alias, src)
             deps.append(src)
         srcdeps = SourceDependencies(parent=info, dependencies=deps)
+        logging.info(srcdeps)
+        if depids:
+            assert False
 
     def map_unid(self, unid, alias):
         "Rewrite document name to include Alias, "

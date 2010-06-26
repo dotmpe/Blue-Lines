@@ -89,6 +89,11 @@ for listSchema, tplName in breveXMLAdapter_listTypes:
 #components.register([IModel], IBlueLinesXML, 'api', _render_model)
 components.register([IQuery], IBlueLinesXML, 'api', _blml_query)
 
+# TODO: adapt model ('schema-instance') to XML instead of schema
+
+#components.register([IStatModel], IBlueLinesXML, 'api', )
+
+
 #components.register([IQuery], IBlueLinesXML, 'api', )
 #components.register([IQuery], IBlueLinesForm, 'api', )
 

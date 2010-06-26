@@ -1,6 +1,9 @@
 :Id: doc/app-engine
 :description: Notes.
 
+- Library is packed into ZIP for easy upload and Lib management.
+- Pytz comes in egg, no solution yet.  
+
 Django
 =======
 App Engine provides Django 0.96.
