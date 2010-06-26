@@ -9,6 +9,7 @@ from google.appengine.ext.db import stats, GqlQuery
 from google.appengine.api import users
 from google.appengine.api import memcache
 from google.appengine.api import urlfetch
+from google.appengine.api.labs import taskqueue
 from google.appengine.ext.webapp import template
 from StringIO import StringIO
 from cPickle import loads
@@ -556,16 +557,50 @@ class AliasApplication(DuBuilderPage):
         return 'text/plain', ''
 
 
-class StaticPage(DuBuilderPage):
-    #pattern = '([^\.]+)\.?(%s)?$' % (DuBuilderPage.ID)
-    pattern = '(.+)$'
+class RstPage(DuBuilderPage):
+    """
+    Publish a previously processed source document with UNID.
+    """
+    pattern = '(%%7[Ee]|~)([^/]+)/(.*?)(\.%s)?$' % DuBuilderPage.ID
 
-    @http_qwds(':str','expose_settings:bool', 'expose_specs:bool')
+    @http_qwds(':_',':unicode',':unicode',':ext')
+    @web_auth
+    @mime
+    def get(self, user, alias, docname, format=None):
+        logging.info([user, alias, docname, format])
+        if not alias:
+            return self.not_found(self.request.uri)
+        alias = api.find_alias(None, alias)
+        logging.info("found alias %s", alias)
+        unid = "~%s/%s" % (alias.handle, docname)
+        self.server._reload(alias)
+        srcinfo = api.find_sourceinfo(alias, unid)
+        logging.info("found srcinfo %s", srcinfo)
+        if not srcinfo:
+            stat = self.server.stat(unid)
+            if stat:
+                taskqueue.add(url=API+'process', params={'unid':unid})
+                assert not "Queued.."
+            else:
+                return self.not_found(unid)
+        #source = srcinfo.parent()
+        return 'text/html', self.server.publish(unid,
+                publish_conf=format or 'html')
+
+
+
+class StaticPage(DuBuilderPage):
+    """
+    Publish a local document (rewrite local name to Blue Lines alias).
+    """
+    pattern = '([^~]*?)(\.%s)?$' % DuBuilderPage.ID
+
+    @http_qwds(':str',':ext','expose_settings:bool', 'expose_specs:bool')
     #@web_auth
     #@dj_xht
     @mime
     #@connegold
-    def get(self, doc_name, **params):
+    def get(self, doc_name, format, **params):
         alias = api.find_alias(None,'Blue Lines')
         #alias = api.new_or_existing_alias('blue',
         #        proc_config='blue-lines',
@@ -589,33 +624,9 @@ class StaticPage(DuBuilderPage):
             assert not doc.transform_messages, map(lambda x:x.astext(),
                     doc.transform_messages)
         # Now render the result into a BL page 
-        format = 'html'
+        if not format: format='html'
         return mediatype_for_extension(format),\
             self.server.publish(unid, format)
-
-
-class RstPage(DuBuilderPage):
-    """
-    Publish one local document.
-    """
-    pattern = '%%7E([^/]+)/([^\.]+)\.?(%s)?$' % DuBuilderPage.ID
-
-    @http_qwds(':unicode',':unicode',':str')
-    @web_auth
-    @mime
-    def get(self, user, alias, docname, format=None):
-        if not alias:
-            return self.not_found()
-        alias = api.find_alias(None, alias)
-        unid = "~%s/%s" % (alias.handle, docname)
-        #srcinfo = api.fetch_sourceinfo(alias, unid)
-        #if not srcinfo:
-        #    return self.not_found()
-        self.server._reload(alias)
-        #source = srcinfo.parent()
-        return 'text/html', self.server.publish(unid,
-                publish_conf=format or 'html')
-
 
 
 # Restfull API

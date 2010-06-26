@@ -329,17 +329,24 @@ def source_ref(alias, unid):
     path = ('Alias', alias, 'Source', unid)
     return db.Key.from_path(*path)
 
-def fetch_sourceinfo(alias, unid):
+def find_sourceinfo(alias, unid):
     key = source_ref(alias, unid)
     # XXX: one info child per source?
-    srcinfo = SourceInfo.all().ancestor(key).get()
+    return SourceInfo.all().ancestor(key).get()
+
+def fetch_sourceinfo(alias, unid):
+    srcinfo = find_sourceinfo(alias, unid)
     assert srcinfo, "No SourceInfo %s" % unid
     return srcinfo
 
-def fetch_source(alias, unid):
+def find_source(alias, unid):
     key = source_ref(alias, unid)
     src = Source.get(key)
     #src = Source.all(key).ancestor(alias).get()
+    return src
+
+def fetch_source(alias, unid):
+    src = find_source(alias, unid)
     assert src, "No SourceInfo %s" % unid
     return src
 

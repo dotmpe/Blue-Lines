@@ -10,6 +10,12 @@ class BlueLinesError(Exception):
     def status_msg(self):
         return ' '.join(map(str,self.args))
 
+class RemoteError(BlueLinesError):
+    implements(interface.IHTTPStatus)
+    def __init__(self, e):
+        super(RemoteError, self).__init__(e)
+        e.status = e.code
+
 class NotFound(BlueLinesError):
     implements(interface.IHTTPStatus)
     status = 404

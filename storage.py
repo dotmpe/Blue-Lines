@@ -32,12 +32,12 @@ class SourceStorage:
     def get(self, alias, *ids):
         assert isinstance(alias, Alias), "Need Alias, not %s" % type(alias)
         for id in ids or self.getall(alias):
-            yield api.fetch_source(alias, id)
+            yield api.find_source(alias, id)
 
     def getinfo(self, alias, *ids):
         assert isinstance(alias, Alias), "Need Alias, not %s" % type(alias)
         for id in ids or self.getall(alias):
-            yield api.fetch_sourceinfo(alias, id)
+            yield api.find_sourceinfo(alias, id)
 
     def clear(self, alias, *ids):
         assert isinstance(alias, Alias), "Need Alias, not %s" % type(alias)

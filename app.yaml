@@ -50,7 +50,8 @@ handlers:
 - url: /script
   static_dir: var/script
 
-- url: /(.*)\.rst
+# XXX: not custom 404?
+- url: /([^~].+)\.rst
   static_files: \1.rst
   mime_type: text/plain
 #  mime_type: text/x-restructuredtext

@@ -15,6 +15,7 @@ BREVE_TPL = lambda *name: os.path.join( 'breve', *name )
 LIB = os.path.join(DOC_ROOT, 'lib')
 SERVER_SOFTWARE = os.environ.get('SERVER_SOFTWARE', '')
 
+sys.path.insert(0, os.path.join(LIB,'pytz-2010h-py2.5.egg'))
 sys.path.insert(0, os.path.join(LIB,'bl_lib.zip'))
 
 if SERVER_SOFTWARE.startswith('Development/'):

@@ -8,6 +8,8 @@ import sets
 import email
 import urllib
 import urllib2
+import email, time, datetime
+import pytz
 
 from google.appengine.api import users
 from google.appengine.ext.webapp import template
@@ -54,9 +56,14 @@ def conv_null_or_id(arg):
     assert arg.isdigit(), arg
     return du_long(arg)
 
+def conv_extension(arg):
+    assert arg.startswith('.')
+    return arg[1:]
+
 data_convertor.update(dict(
     v=conv_version,
     l=conv_null_or_id,
+    ext=conv_extension,
 ))
 
 
@@ -147,7 +154,12 @@ def fetch_uriref(uriref, dt=None, etag=None, md5check=None):
         if e.code == 304:
             return 
         logger.critical([e, type(e), e.code])
-        assert e.code == 200, str(e.code) +' '+ e.message
+        if e.code != 200:
+            if e.code == 404:
+                raise exception.NotFound(uriref)
+            else:
+                raise exception.RemoteError(e)
+        #assert e.code == 200, str(e.code) +' '+ e.message
     # XXX: res.geturl() == uriref ?
     contents = res.read()
     #if not contents:
@@ -157,9 +169,9 @@ def fetch_uriref(uriref, dt=None, etag=None, md5check=None):
     contents = unicode(contents, encoding)
     dtstr = info.get('Last-Modified', None)
     if dtstr:
-        logger.info(dtstr)
-        # TODO: timezone..
-        dt = email.utils.parsedate_tz(dtstr)
+        utctimestamp = email.Utils.mktime_tz(email.Utils.parsedate_tz(
+            dtstr))
+        dt = datetime.datetime.fromtimestamp( utctimestamp, pytz.utc )
     etag = info.get('ETag', None)
     md5sum = info.get('Content-MD5', '')
     if not md5sum:
@@ -328,7 +340,10 @@ def _http_qwd_specs(fields):
 
 def _convspec(fields):
     "Get convertors for fields. "
-    return dict([ (k,get_convertor(v)) for k,v in fields ])
+    convs = dict([ (k,get_convertor(v)) for k,v in fields if v != '_' ])
+    # keep '_' char for ignored arg/kwd
+    convs.update(dict([ (k,'_') for k,v in fields if v == '_' ]))
+    return convs
 
 def http_qwds(*fields, **kwds):
     """
@@ -341,7 +356,18 @@ def http_qwds(*fields, **kwds):
     Field names are converted to name IDs, but the '-' are replaced by '_' 
     (to convert the name ID to a Python identifier).
 
+    '_' is treated as a special convertor to ignore an arg/kwd.
+
     `qwd_method` may be 'auto', 'both', or 'GET' or 'POST'. Default is 'auto'.
+
+    .. raw:: python
+
+       class ExampleRequestHandler:
+           pattern = '^/version/([0-9]+)/([^/]+)/(0|1)/([^\.]+)(\.test)$'
+
+           @http_qwds(':int',':_',':bool',':unicode',':ext', 'kwd1:unicode', 'kwd2:text', test='pickle')
+           def myhandle(self, v, arg1, arg2, arg3, kwd1=None, **otherkwds):
+               pass
     """
     qwd_method = kwds.get('qwd_method', 'auto')
     if 'qwd_method' in kwds:
@@ -360,7 +386,13 @@ def http_qwds(*fields, **kwds):
                         'multipart/form-data', ), ct
             # take positional arguments from URL pattern
             argcnt = len(args)
-            for idx, data in enumerate(args):
+            items = list(enumerate(args))
+            ignorespecs = 0
+            for idx, data in items:
+                if aspec[idx] == '_':
+                    ignorespecs += 1
+                    args = args[:idx] + args[idx+1:]
+                    continue # ignore argument
                 if type(data) == type(None) or idx >= argcnt: break
                 value = None
                 try:
@@ -368,8 +400,8 @@ def http_qwds(*fields, **kwds):
                 except (TypeError, ValueError), e:
                     # TODO: report warning in-document
                     logger.warning(e)
-                # replace argument
-                args = args[:idx] + (value,) + args[idx+1:]
+                # always replace argument
+                args = args[:idx-ignorespecs] + (value,) + args[idx-ignorespecs+1:]
             logger.debug("Converted arguments %s", args)
             # take keyword arguments from GET query or POST entity
             items = []
@@ -383,6 +415,8 @@ def http_qwds(*fields, **kwds):
             for key, data in items:
                 key = key.replace('_','-')
                 if key in qspec:
+                    if qspec[key] == '_':
+                        continue # ignore keyword
                     value = None
                     try:
                         value = qspec[key](data)

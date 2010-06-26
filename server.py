@@ -215,9 +215,7 @@ class BlueLines:
         """
         assert ALIAS_re.match(unid), "Invalid aliased ID: %s " % unid
         info = self.store.getinfo(self.alias, unid).next()
-        if not info:
-            return False
-        elif digest:
+        if info and digest:
             if unid_digest != info.digest:
                 logger.info("%s invalidated by digest", unid)
                 return False
@@ -247,7 +245,7 @@ class BlueLines:
             else:
                 return True
         else:
-            return True
+            return False
 
     def getids(self, limit=100, offset=0):
         return model.SourceInfo.ancestor(self.alias).fetch(limit, offset)
