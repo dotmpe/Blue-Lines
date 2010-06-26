@@ -224,13 +224,31 @@ class BlueLines:
         elif hasattr(self.alias, 'remote_path'):
             source_id = self.__remote_id(unid)
             logger.info("Checking remote path for %s (%s)", unid, source_id)
-            res = model.Resource.get_or_insert(
-                    hashlib.md5(source_id).hexdigest(), remote_id=source_id)
-            rst = fetch_uriref(source_id, info.time, res.etag,
-                    info.digest)
+            res = None
+            if info:
+                # Known remote UNID
+                res = model.Resource.get_or_insert(
+                        hashlib.md5(source_id).hexdigest(), remote_id=source_id)
+                rst = fetch_uriref(source_id, info.time, res.etag,
+                        info.digest)
+            else:
+                # Check for existince of remote source
+                rst = fetch_uriref(source_id)
             if rst:
-                logger.warning("Remote updated!")
                 contents, time, etag, digest = rst
+                src = None
+                if info:
+                    src = info.parent()
+                    logger.warning("Remote update (%s): %s",
+                            self.alias.handle, source_id)
+                else:                    
+                    logger.warning("New remote source (%s): %s ", 
+                            self.alias.handle, source_id)
+                    src, info = self.store.add(self.alias, unid, contents,
+                            digest=digest, time=time)
+                    #srcdigest = 'Content-MD5'
+                    res = model.Resource.get_or_insert(
+                            digest, remote_id=source_id)
                 assert isinstance(contents, unicode)
                 src = info.parent()
                 src.source = contents
@@ -242,8 +260,10 @@ class BlueLines:
                 res.etag = etag
                 res.put()
                 return False
-            else:
+            elif info:
                 return True
+            else:
+                return False
         else:
             return False
 

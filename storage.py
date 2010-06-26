@@ -55,15 +55,15 @@ class SourceStorage:
             errors='', docpickled=None, public=False):
         assert isinstance(alias, Alias), "Need Alias, not %s" % type(alias)
         assert isinstance(unid, basestring)
-        assert doctree and isinstance(doctree, nodes.document), \
-                "Need doctree, not %s" % type(contents)
+        assert not doctree or isinstance(doctree, nodes.document), \
+                "Need doctree, not %s" % type(doctree)
         assert not contents or isinstance(contents, unicode),\
                 "Need unicode source, not %s" % type(contents)
         if not digest:
             m = hashlib.md5(contents)
             digest = m.hexdigest()
         assert digest and isinstance(digest, str)
-        if not docpickled:
+        if doctree and not docpickled:
             doctree.reporter = None
             docpickled = pickle.dumps(doctree)
         # Create Source entity            
@@ -78,6 +78,7 @@ class SourceStorage:
         #self.add_dependencies(alias, unid, [], reset=True, info=srcinfo,
         #        doctree=doctree)
         #logging.info("Added Source %s" % unid)
+        return src, srcinfo
 
     def add_dependencies(self, alias, unid, depids=[], reset=False, info=None,
             doctree=None):
