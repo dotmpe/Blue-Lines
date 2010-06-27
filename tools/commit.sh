@@ -1,6 +1,7 @@
 if test -n "$1";
+then    
     git commit -m "$1";
-    bzr gi -m "$1";
+    bzr ci -m "$1";
     bzr push;
     git push;
 else
