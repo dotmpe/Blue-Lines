@@ -121,7 +121,8 @@ class BlueLines:
         assert unid[1:].startswith(self.alias.handle)
         self._initialize(settings_overrides)
         #logger.info(self.overrides)
-        self.__build(source, unid, doctree, docpickled, digest)
+        settings = self.__settings(*self.__conf())
+        self.__build(source, unid, doctree, docpickled, digest, settings)
         assert self.__doctree
         # Capture messages from build and process
         error_messages, messages = self.__messages(
@@ -185,7 +186,8 @@ class BlueLines:
                 writer_name=pconf.writer)
         return output
 
-    def __conf(self, name):
+    def __conf(self, name=None):
+        " Return builder-conf, and proc-conf or named pub-conf. "
         conf = self.alias.proc_config
         build = conf.parent()
         assert build, (name, conf, build)
@@ -197,10 +199,13 @@ class BlueLines:
         return build, conf            
 
     def __settings(self, build, conf):
+        logging.debug('Loading settings from %s, %s', build, conf)
         r = build.settings.copy()
         for k,v in conf.settings.__dict__.items():
             if not k.startswith('_'):
                 setattr(r, k, v)
+        #logging.info(pformat([(k,getattr(r, k, v)) for k,v in
+        #    conf.settings.__dict__.items() if not k.startswith('_') ]))
         return r
 
     def stat(self, unid, digest=None):
@@ -386,7 +391,8 @@ class BlueLines:
         messages = [ msg for msg in messages if msg not in error_messages ]
         return error_messages, messages
 
-    def __build(self, source, unid, doctree=None, docpickled=None, digest=None):
+    def __build(self, source, unid, doctree=None, docpickled=None, digest=None, 
+            settings=None):
         """
         Build from source, rebuild doctree if required.
         """
@@ -416,11 +422,11 @@ class BlueLines:
         elif not self.__doctree:
             builder = util.get_builder(self.__builder_name,
                     self.allowed_builders)()
-            doctree = builder.build(self.__source, unid, self.overrides)
+            doctree = builder.build(self.__source, unid, settings, self.overrides)
             assert doctree, doctree
-            logger.info("Built document %s", unid)
-            logger.info(doctree.parse_messages)
-            logger.info(doctree.transform_messages)
+            #logger.info("Built document %s", unid)
+            #logger.info(doctree.parse_messages)
+            #logger.info(doctree.transform_messages)
             encoding = builder.publisher.source.successful_encoding
         assert isinstance(doctree, nodes.document), \
                 "Need Du document, not %s " % type(doctree)
@@ -750,4 +756,21 @@ class NabuBlueLinesAdapter(NabuSingleBaseWrapper):#NabuDefaultBaseWrapper):
         return self.compat.process_doctree(_unid, filename, digest,
                         contents_bin, encoding, doctree_bin, errortext,
                         report_level)
+
+
+## Server return types
+
+class Result(object):
+    pass
+
+class StatResult(Result):
+    def __init__(self, stat):
+        pass
+
+class ProcessResult(Result):
+    pass
+
+class PublishResult(Result):
+    pass
+
 

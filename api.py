@@ -306,12 +306,12 @@ def new_config(conf_name, kind, **props):
 def update_config(conf, **props):
     prsr = util.OptionParser()
     prsr.init_for_config(conf)
-    cfgkeys = [k for k in dir(prsr.get_default_values()) if not k.startswith('_')]
-    propkeys = props.keys()
-    for k in propkeys:
-        if not k in cfgkeys:
-            del props[k]
-            logging.error("Unknown or illegal setting %r for %r, ignored", k, conf)
+    #cfgkeys = [k for k in dir(prsr.get_default_values()) if not k.startswith('_')]
+    #propkeys = props.keys()
+    #for k in propkeys:
+    #    if not k in cfgkeys:
+    #        del props[k]
+    #        logging.error("Unknown or illegal setting %r for %r, ignored", k, conf)
     for setting, error in prsr.update_valid(conf.settings, **props):
         logging.error("Error in setting %s: %s", setting, error)
 

@@ -1,6 +1,10 @@
 #!/bin/sh 
 # Initialize resources for BlueLines alias if needed. 
 # Try processing some documents.
+print_result()
+{
+    if test $1 -ge 1; then echo $3; else echo $2; fi;        
+}
 do_dev_login()
 {
     curl http://iris:8080/_ah/login \
@@ -9,7 +13,7 @@ do_dev_login()
         -F continue='' \
         -F action=Login \
         -c .cookie.jar;
-    echo "Logged in. "        
+    print_result $? "Logged in at dev-server. " "Error logging in at dev-server."
 }
 do_ga_login()
 {
@@ -18,27 +22,29 @@ do_ga_login()
             --data @/home/berend/project/dotmpe-com/var/phpbl/post-credentials.txt \
             -c .cookie.jar;
             #-F passwd=MassiveGMail -F email=berend.van.berkum@gmail.com \
-        echo "Logged in at GA. "
+        print_result $? "Logged in at GA. " "Error logging in at GA. "
     fi;        
 }
 init_build_config()
 {
-    curl $CURL/config/bl
-    if test $? -ge 1; then
-       curl $CURL/config/bl \
-           -F title="Blue Lines shared build-configuration " \
-           -F builder="bluelines.Document" 
-       echo "Initialized config:bl"
-    fi;        
+#    curl $CURL/config/bl
+#    if test $? -ge 1; then
+        curl $CURL/config/bl \
+            -F title="Blue Lines shared build-configuration " \
+            -F builder="bluelines.Document" \
+            -F breadcrumb=yes
+        print_result $? "Initialized config:bl" "Error initializing config:bl"
+#    fi;        
 }
 init_proc_config()
 {
-    curl $CURL/config/bl/process/bluelines
-    if test $? -ge 1; then
+#    curl $CURL/config/bl/process/bluelines
+#    if test $? -ge 1; then
         curl $CURL/config/bl/process/bluelines \
-            -F title="Blue Lines" 
-        echo "Initialized config:bl:bluelines"        
-    fi;
+            -F title="Blue Lines" \
+            -F breadcrumb=no
+        print_result $? "Initialized config:bl:bluelines" "Error initializing config:bl:bluelines"
+#    fi;
 }
 init_pub_config()
 {
@@ -48,14 +54,14 @@ init_pub_config()
             -F title="Blue Lines HTML" \
             -F writer="dotmpe-html" \
             -F template="var/du-html-template.txt" 
-        echo "Initialized config:bl:html"
+        print_result $? "Initialized config:bl:html" "Error initializing config:bl:html"
     fi;
     curl $CURL/config/bl/publish/xml
     if test $? -ge 1; then
         curl $CURL/config/bl/publish/xml \
             -F title="Docutils XML" \
             -F writer="xml" 
-        echo "Initialized config:bl:xml"
+        print_result $? "Initialized config:bl:xml" "Error initializing config:bl:xml"
     fi;
 }
 init_alias()
@@ -70,7 +76,7 @@ if test $? -ge 1; then
         -F "default-page"=welcome \
         -F "default-leaf"=main \
         -F "remote-path"="http://iris:8088" 
-    echo "Initialized alias:BL Dev"
+    print_result $? "Initialized alias:BL Dev" "Error initializing alias:BL Dev"
 fi;        
 curl $CURL/alias/Blue%20Lines
 if test $? -ge 1; then
@@ -82,9 +88,7 @@ if test $? -ge 1; then
         -F "default-page"=welcome \
         -F "default-leaf"=main \
         -F "remote-path"="http://blue-lines.appspot.com" 
-#        -F "remote-path"="http://iris:8088" 
-#    -F default-pub-config="blue-lines-html" \
-    echo "Initialized alias:Blue Lines"
+    print_result $? "Initialized alias:Blue Lines" "Error initializing alias:Blue Lines"
 fi;        
 curl $CURL/alias/Sandbox
 if test $? -ge 1; then
@@ -95,7 +99,7 @@ if test $? -ge 1; then
         -F "proc-config"="bl,bluelines" \
         -F "default-page"=welcome \
         -F "default-leaf"=main 
-    echo "Initialized alias:Sandbox"
+    print_result $? "Initialized alias:Sandbox" "Error initializing alias:Sandbox"
 fi;        
 }
 delete_all()
@@ -115,6 +119,7 @@ test_fetch()
     curl $CURL_/config/bl 
 }
 #CURL="-b .cookie.jar -f -o /dev/null http://iris:8080/0.1/dubl"
+#rm .cookie.jar
 if test "$1" == 'dev'; then
     CURL_="-b .cookie.jar http://iris:8080/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
@@ -127,15 +132,15 @@ else
 fi;
 #delete_all
 #test_fetch
-init_build_config
+#init_build_config
 init_proc_config
-init_pub_config
-init_alias
+#init_pub_config
+#init_alias
 #test_fetch
-curl $CURL/process \
-    -F unid="~Blue Lines/ReadMe" 
-curl $CURL/process \
-    -F unid="~BL Dev/ReadMe" 
+#curl $CURL/process \
+#    -F unid="~Blue Lines/ReadMe" 
+#curl $CURL/process \
+#    -F unid="~BL Dev/ReadMe" 
 #curl $CURL/publish \
 #    -F unid="~Blue Lines/ReadMe" \
 #    -F format=html
@@ -152,4 +157,3 @@ curl $CURL/process \
 #    -F "default-page"=welcome \
 #    -F "default-leaf"=main \
 #    -F "remote-path"="http://iris:8088" 
-#rm .cookie.jar

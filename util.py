@@ -278,7 +278,7 @@ class OptionParser(frontend.OptionParser):
 
     def __init_for_config(self, specs):
         #specs=()
-        logger.info(specs)
+        logger.info("Initializing config for components: %s", specs)
         self.components = specs
         #(self,) + tuple(specs)
         self.populate_from_components(self.components)
@@ -286,22 +286,35 @@ class OptionParser(frontend.OptionParser):
 
     def update_valid(self, settings, **props):
         for setting in props:
-            option = self.get_option_by_dest(setting)
-            logging.info(['update_valid', setting, option, option.validator])
-
+            #
+            setting = setting.replace('-', '_')
+            try:
+                option = self.get_option_by_dest(setting)
+            except KeyError, e:
+                logger.critical("Cannot get option for setting %r: %s", setting, e)
+                continue
+            #
             value = props.get(setting) 
-            option.process(setting, value, settings, self)
-            continue
+            #logging.info(['update_valid', setting, value,
+            #    option,
+            #    option.validator, getattr(settings, setting)])
             if option.validator:
-                value = props.get(setting) 
                 try:
-                    new_value = option.validator(
+                    value = option.validator(
                             setting, value, option_parser)
                 except Exception, error:
                     yield setting, error
-                setattr(settings, setting, new_value)
+            #
+            if option.action in ('store_true', 'store_false'):
+                # XXX: override, accept bool arg
+                value = get_convertor('bool')(value)
+                setattr(settings, setting, value)
                 if option.overrides:
                     setattr(settings, option.overrides, None)
+            else:
+                if option.action == 'store_const':
+                    raise KeyError, "Cannot override constant. "
+                option.process(setting, value, settings, self)
 
 
 ### BlueLinesPage method decorators

@@ -99,6 +99,8 @@ doc/
     the application's web-frontend.
 var/
     Static templates and other media.
+tools/
+    Command-line scripts utilities.
 
 
 Test

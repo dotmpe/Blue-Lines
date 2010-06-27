@@ -747,7 +747,7 @@ class AbstractConfig(DuBuilderPage):
                         "`setting` key not implemented for existing config. "
         data = dict([ (str(k),v) for k,v in getattr(self.request,
             self.request.method).items()])
-        logger.info(data)
+        #logger.info(data)
         data.update(props)
         self._update(user, conf, schema, **data)
         return conf
@@ -759,6 +759,8 @@ class AbstractConfig(DuBuilderPage):
         if 'title' in props:
             conf.title = props['title']
             del props['title']
+        if 'parent' in props: del props['parent']
+        if 'owner' in props: del props['owner']
         api.update_config(conf, **props)
         conf.put()
 
@@ -848,6 +850,7 @@ class Process(DuBuilderPage):
         doctree, error_messages = self.server.process(rst, unid)
         return 'system-messages', error_messages
 
+    get = post
 
 class Publish(DuBuilderPage):
     pattern = API + '/publish'

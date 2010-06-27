@@ -23,6 +23,10 @@ import _conf
 import util
 import extractor
 
+"XXX: Override include directive registration. "
+from docutils.parsers.rst import directives
+from dotmpe.du.ext.parser.rst.directive.include import BLInclude
+directives.register_directive('include', BLInclude)
 
 logger = logging.getLogger(__name__)
 
@@ -35,34 +39,34 @@ class Document(builder.Builder):
             ))
 
     settings_defaults = {
-        'build': 'bluelines.Document',
-        #'_disable_config': True,
-        # Doctree inclusions
-        'breadcrumb': 1,
-        'generator': 1,
-        'date': 1,
-        'docinfo_xform': 1,
-
-        # Clean doctree some (no effect on HTML output):
-        'strip_substitution_definitions': True,
-        'strip_anonymous_targets': True,
-
-        # Allow document authors to override builder and source ID
-        # allow stripping/leaving of these fields.
-        'user_settings': ['build', 'Id', ],
-        'strip_settings_names': ['build', 'Id'],
-        'strip_user_settings': False,
+#        'build': 'bluelines.Document',
+#        #'_disable_config': True,
+#        # Doctree inclusions
+#        'breadcrumb': 0,
+#        'generator': 1,
+#        'date': 1,
+#        'docinfo_xform': 1,
+#
+#        # Clean doctree some (no effect on HTML output):
+#        'strip_substitution_definitions': True,
+#        'strip_anonymous_targets': True,
+#
+#        # Allow document authors to override builder and source ID
+#        # allow stripping/leaving of these fields.
+#        'user_settings': ['build', 'Id', ],
+#        'strip_settings_names': ['build', 'Id'],
+#        'strip_user_settings': False,
     }
     settings_default_overrides = {
         '_disable_config': True,
         'file_insertion_enabled': False,
         'embed_stylesheet': False,
         # transforms.references
-        'rfc_references': True,
-        'rfc_base_url': "http://tools.ietf.org/html/",
+        #'rfc_references': True,
+        #'rfc_base_url': "http://tools.ietf.org/html/",
         # writers.html4css1
-        'stylesheet_path':'/media/style/default.css',
-        'field_name_limit': 25,
+        #'stylesheet_path':'/media/style/default.css',
+        #'field_name_limit': 25,
         # overridden by bluelines.server:
         'template': os.path.join(_conf.DOC_ROOT, 'var', 'du-html-template.txt'),
     }
@@ -82,7 +86,9 @@ class Document(builder.Builder):
         config_section = 'Blue Lines reader'
         config_section_dependencies = ('readers',)
         def get_transforms(self):
-            return mpe.Reader.get_transforms(self)
+            tx = mpe.Reader.get_transforms(self)
+            #tx.remove( generate.PathBreadcrumb )
+            return tx
 
     class ReReader(builder.Builder.ReReader):
         settings_spec = (

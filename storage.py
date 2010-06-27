@@ -91,14 +91,14 @@ class SourceStorage:
                 assert doctree, (unid, doctree)
                 doctree = pickle.loads(doctree)
             depids = [ p for p in doctree.settings.record_dependencies.list ]
-        logging.info(depids)
+        logging.info("Storing for %s deps %s", unid, depids)
         deps = []            
         for src in depids:
             if notisinstance(src, db.Key):
                 src = key(alias, src)
             deps.append(src)
         srcdeps = SourceDependencies(parent=info, dependencies=deps)
-        logging.info(srcdeps)
+        #logging.info(srcdeps)
         if depids:
             assert False
 

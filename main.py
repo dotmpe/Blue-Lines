@@ -72,7 +72,7 @@ application = webapp.WSGIApplication(map(
 
         #handler.SourcePage,
 
-        handler.RstPage,
+        handler.LocalPage,
         handler.StaticPage,
         #handler.Sitemap,
 
