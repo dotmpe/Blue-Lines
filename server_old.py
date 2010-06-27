@@ -128,8 +128,11 @@ class BlueLines:
         error_messages, messages = self.__messages(
                 error_level=validation_level, reset=True)
         if not error_messages:
-            builder = util.get_builder(self.__builder_name,
+            builder = util.get_builder(
+                    self.__builder_name,
                     self.allowed_builders)()
+            store_params = self.store_params.copy()
+            store_params.update(dict( alias=self.alias, ))
             builder.prepare(**self.store_params)
             builder.process(self.__doctree, unid)
             logger.info("Process document %s", unid)
