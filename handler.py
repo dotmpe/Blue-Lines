@@ -567,7 +567,7 @@ class LocalPage(DuBuilderPage):
     """
     Render a previously processed source document with UNID.
     """
-    pattern = '(%%7[Ee]|~)([^/]+)/(.*?)(\.%s)?$' % DuBuilderPage.ID
+    pattern = '(~|%%7E)([^/]+)/?(.*?)(\.%s)?$' % DuBuilderPage.ID
 
     @http_qwds(':_',':unicode',':unicode',':ext')
     @web_auth
@@ -577,6 +577,10 @@ class LocalPage(DuBuilderPage):
         if not alias:
             return self.not_found(self.request.uri)
         alias = api.find_alias(None, alias)
+        if not docname:
+            docname = alias.default_page
+        elif docname.endswith('/'):
+            docname += alias.default_leaf
         unid = "~%s/%s" % (alias.handle, docname)
         self.server._reload(alias)
         srcinfo = api.find_sourceinfo(alias, unid)
@@ -598,13 +602,17 @@ class StaticPage(DuBuilderPage):
     """
     Publish a local document (rewrite local name to Blue Lines alias).
     """
-    pattern = '([^~]*?)(\.%s)?$' % DuBuilderPage.ID
+    pattern = '([^\~|%%7E]*?)(\.%s)?$' % DuBuilderPage.ID
 
     @http_qwds(':str',':ext','expose_settings:bool', 'expose_specs:bool')
     @mime
     def get(self, doc_name, format, **params):
         alias = api.find_alias(None,'Blue Lines')
         assert alias, "Blue Lines has not been initialized. "
+        if not doc_name:
+            doc_name = alias.default_page
+        elif doc_name.endswith('/'):
+            doc_name += alias.default_leaf
         unid = "~Blue Lines/%s" % doc_name
         logger.info("StaticPage GET %s", unid)
         self.server._reload(alias)
@@ -676,7 +684,7 @@ class Alias(DuBuilderPage):
 
     @http_qwds(':v',':l',':unicode', 'handle:unicode',
             'proc-config:str','public:bool','remote-path:str',
-            'default-title:unicode','default-home:unicode','default-leaf:unicode',
+            'default-title:unicode','default-page:unicode','default-leaf:unicode',
             )#qwd_method='both')
     @web_auth
     @out(interface.IBlueLinesXML, 'api')
@@ -835,7 +843,7 @@ class Process(DuBuilderPage):
         # XXX: alias access and source process privileges
         if unid and not isinstance(unid, basestring):
             raise TypeError, "Need UNID, not %s" % type(unid)
-        if hasattr(alias, 'owner'):
+        if (rst or format) and hasattr(alias, 'owner'):
             if alias.owner != user:
                 raise exception.ValueError, \
                         "You (%s) are not owner of Alias %r" % \
@@ -845,10 +853,8 @@ class Process(DuBuilderPage):
                     "Use extension, refer to doc for unid_includes_ext"
         else:
             assert format, "Need source format"
-            unid += format
         self.server._reload(alias)
-        doctree, error_messages = self.server.process(rst, unid)
-        return 'system-messages', error_messages
+        return self.server.process(unid, rst, format)
 
     get = post
 

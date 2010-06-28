@@ -48,14 +48,15 @@ init_proc_config()
 }
 init_pub_config()
 {
-    curl $CURL/config/bl/publish/html
-    if test $? -ge 1; then
+#    curl $CURL/config/bl/publish/html
+#    if test $? -ge 1; then
         curl $CURL/config/bl/publish/html \
             -F title="Blue Lines HTML" \
             -F writer="dotmpe-html" \
-            -F template="var/du-html-template.txt" 
+            -F template="var/du-html-template.txt" \
+            -F stylesheet="/media/style/default.css"
         print_result $? "Initialized config:bl:html" "Error initializing config:bl:html"
-    fi;
+#    fi;
     curl $CURL/config/bl/publish/xml
     if test $? -ge 1; then
         curl $CURL/config/bl/publish/xml \
@@ -66,30 +67,30 @@ init_pub_config()
 }
 init_alias()
 {
-curl $CURL/alias/BL%20Dev
-if test $? -ge 1; then
+#curl $CURL/alias/BL%20Dev
+#if test $? -ge 1; then
     curl $CURL/alias \
         -F handle="BL Dev" \
         -F "default-title"="Blue Lines (dev)" \
         -F public=True \
         -F "proc-config"="bl,bluelines" \
-        -F "default-page"=welcome \
+        -F "default-page"=ReadMe \
         -F "default-leaf"=main \
         -F "remote-path"="http://iris:8088" 
     print_result $? "Initialized alias:BL Dev" "Error initializing alias:BL Dev"
-fi;        
-curl $CURL/alias/Blue%20Lines
-if test $? -ge 1; then
+#fi;        
+#curl $CURL/alias/Blue%20Lines
+#if test $? -ge 1; then
     curl $CURL/alias \
         -F handle="Blue Lines" \
         -F "default-title"="Blue Lines" \
         -F public=True \
         -F "proc-config"="bl,bluelines" \
-        -F "default-page"=welcome \
+        -F "default-page"=ReadMe \
         -F "default-leaf"=main \
         -F "remote-path"="http://blue-lines.appspot.com" 
     print_result $? "Initialized alias:Blue Lines" "Error initializing alias:Blue Lines"
-fi;        
+#fi;        
 curl $CURL/alias/Sandbox
 if test $? -ge 1; then
     curl $CURL/alias \
@@ -123,8 +124,8 @@ test_fetch()
 if test "$1" == 'dev'; then
     CURL_="-b .cookie.jar http://iris:8080/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
-    do_dev_login # first-run bug in GAE-SDK, module not loaded
-    do_dev_login
+#    do_dev_login # first-run bug in GAE-SDK, module not loaded
+#    do_dev_login
 else
     CURL_="-b .cookie.jar http://blue-lines.appspot.com/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
@@ -133,14 +134,14 @@ fi;
 #delete_all
 #test_fetch
 #init_build_config
-init_proc_config
+#init_proc_config
 #init_pub_config
 #init_alias
 #test_fetch
 #curl $CURL/process \
 #    -F unid="~Blue Lines/ReadMe" 
-#curl $CURL/process \
-#    -F unid="~BL Dev/ReadMe" 
+curl $CURL/process \
+    -F unid="~BL Dev/ReadMe" 
 #curl $CURL/publish \
 #    -F unid="~Blue Lines/ReadMe" \
 #    -F format=html

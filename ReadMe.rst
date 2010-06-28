@@ -1,7 +1,7 @@
 Blue Lines
 ==========
 Python Docutils publishing
---------------------------
+___________________________
 
 .. :Id: ~Blue Lines/ReadMe
 
@@ -62,8 +62,7 @@ The on-line features are under development, the current aims are:
 * Backup and document processing using a to-be completed reStructuredText writer.
 * `read on .. </doc/main.rst>`__ (Here be dragons).
 
-..
-    The offline editing is done in reStructuredText. Possibly other formats may be adapted to Docutils in the future. Publication requires a standard Python installation and the Blue publisher client, an adaption of Nabu.
+.. The offline editing is done in reStructuredText. Possibly other formats may be adapted to Docutils in the future. Publication requires a standard Python installation and the Blue publisher client, an adaption of Nabu.
 
 .. warning::
 
@@ -71,7 +70,7 @@ The on-line features are under development, the current aims are:
 
    Download the old client here__.
 
-   .. __: /var/media/blue
+.. __: /var/media/blue
 
 
 Overview

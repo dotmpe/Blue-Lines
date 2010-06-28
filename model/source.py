@@ -1,14 +1,16 @@
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
+from model.extras import PickleProperty
+
 
 
 class Source(db.Model):
     "UNID for Key name; Alias for parent. "
     source = db.TextProperty()
-    "Source stream or cached stream for remote documents. "
-    doctree = db.BlobProperty()
-    "Cached doctree, ..."
+    "Source stream or cached stream for remote documents"
+    doctree = PickleProperty()
+    "Cached doctree"
 
 class Pending(db.Model):
     "Unprocessed Source, UNID for Key name, Alias for parent. "
