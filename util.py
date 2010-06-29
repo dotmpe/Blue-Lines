@@ -25,6 +25,7 @@ from docutils import frontend, nodes
 
 from dotmpe.du import form
 from dotmpe.du.util import *
+#from dotmpe.du.util import read_buildline, extract_field
 from dotmpe.du.comp import get_builder_class, get_writer_class
 
 import interface
@@ -130,7 +131,6 @@ def get_opener(cookiejar=None, error_proc=True):
         opener.add_handler(urllib2.HTTPCookieProcessor(cookiejar))
     return opener
 
-
 def get_param(paramstr, name, default):
     assert name.isalnum()
     m = re.compile(PARAM_re % name).search(paramstr)
@@ -138,8 +138,10 @@ def get_param(paramstr, name, default):
         return m.group(1)
     return default
 
-def fetch_uriref(uriref, dt=None, etag=None, md5check=None):
+def fetch_uriref(uriref, format=None, dt=None, etag=None, md5check=None):
     "Deref. URI, return contents if modified according to params. "
+    if md5check:
+        assert isinstance(md5check, str)
     logger.info("Fetch %s", [uriref, dt, etag, md5check])
     req = urllib2.Request(uriref)
     if dt:
@@ -179,8 +181,9 @@ def fetch_uriref(uriref, dt=None, etag=None, md5check=None):
     if md5check:
         if md5sum == md5check:
             return
+    assert isinstance(md5sum, str)
     # Data was updated
-    return contents, dt, etag, md5sum
+    return contents, format, dt, etag, md5sum, encoding
 
 
 ## DU server utils

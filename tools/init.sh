@@ -76,7 +76,9 @@ init_alias()
         -F "proc-config"="bl,bluelines" \
         -F "default-page"=ReadMe \
         -F "default-leaf"=main \
-        -F "remote-path"="http://iris:8088" 
+        -F "remote-path"="http://iris:8088" \
+        -F "strip-extension"="True" \
+        -F "unid-includes-ext"="False"
     print_result $? "Initialized alias:BL Dev" "Error initializing alias:BL Dev"
 #fi;        
 #curl $CURL/alias/Blue%20Lines
@@ -88,7 +90,9 @@ init_alias()
         -F "proc-config"="bl,bluelines" \
         -F "default-page"=ReadMe \
         -F "default-leaf"=main \
-        -F "remote-path"="http://blue-lines.appspot.com" 
+        -F "remote-path"="http://blue-lines.appspot.com" \
+        -F "strip-extension"="True"\
+        -F "unid-includes-ext"="False"
     print_result $? "Initialized alias:Blue Lines" "Error initializing alias:Blue Lines"
 #fi;        
 curl $CURL/alias/Sandbox
@@ -124,8 +128,8 @@ test_fetch()
 if test "$1" == 'dev'; then
     CURL_="-b .cookie.jar http://iris:8080/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
-#    do_dev_login # first-run bug in GAE-SDK, module not loaded
-#    do_dev_login
+    do_dev_login # first-run bug in GAE-SDK, module not loaded
+    do_dev_login
 else
     CURL_="-b .cookie.jar http://blue-lines.appspot.com/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
@@ -138,10 +142,13 @@ fi;
 #init_pub_config
 #init_alias
 #test_fetch
+if test "$1" == 'dev'; then
+    curl $CURL/process \
+        -F unid="~BL Dev/ReadMe" \
+        -F format="rst"
+fi;
 #curl $CURL/process \
 #    -F unid="~Blue Lines/ReadMe" 
-curl $CURL/process \
-    -F unid="~BL Dev/ReadMe" 
 #curl $CURL/publish \
 #    -F unid="~Blue Lines/ReadMe" \
 #    -F format=html

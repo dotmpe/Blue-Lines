@@ -35,7 +35,7 @@ class Alias(polymodel.PolyModel):
 
     strip_extension = db.BooleanProperty(default=True)
     """
-    If UNID includes format, remove it, this allows the format to change, 
+    If an UNID includes format, remove it, this allows the format to change, 
     while still keeping the UNID rewritable to an (remote) filename.
     """
     " (But only rst is supported at the moment. )"
@@ -49,7 +49,7 @@ class Alias(polymodel.PolyModel):
     However added upon remote-id rewrite.
     The format may be altered
     """
-    unid_includes_ext = db.BooleanProperty(default=True)
+    unid_includes_format = db.BooleanProperty(default=True)
 
     public = db.BooleanProperty(default=False)
     "Wether contents may be displayed or listed publicly. "

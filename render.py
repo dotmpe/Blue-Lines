@@ -16,7 +16,7 @@ components = compy.getRegistry()
 
 
 # Generic handler to provide IBlueLinesXML trees using Breve templates
-def _blml_tree(name, data, fragments={}):
+def _blml_tree(name, data, fragments={}): # {{{
     """
     See templates in var/breve/xml, using nodes from tags.bluelines.
     """
@@ -37,7 +37,9 @@ def _blml_tree(name, data, fragments={}):
                 auth=auth.email,
             )[brevetree]
 
-def _blml_query(q):
+    # }}}
+
+def _blml_query(q): # {{{
     listSchema = components.lookup1(q.schema, IListSchema)
     brevetree = components.lookup1(listSchema, IBlueLinesXML, 'api')(q.value)
     auth = api.get_current_user()
@@ -50,6 +52,8 @@ def _blml_query(q):
                         brevetree.children[0]
                     ]
                 ]
+
+    # }}}
 
 # Register the IBlueLinesXML target interface for model schemas
 breveXMLAdapter_types = [
@@ -88,6 +92,10 @@ for listSchema, tplName in breveXMLAdapter_listTypes:
 #components.register([ISchema], IBlueLinesXML, 'api', _render_schema)
 #components.register([IModel], IBlueLinesXML, 'api', _render_model)
 components.register([IQuery], IBlueLinesXML, 'api', _blml_query)
+
+def _blml_api_result(r):
+    return str(r)
+components.register([IResult], IBlueLinesXML, 'api', _blml_api_result)
 
 # TODO: adapt model ('schema-instance') to XML instead of schema
 

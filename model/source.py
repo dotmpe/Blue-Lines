@@ -1,13 +1,13 @@
 from google.appengine.ext import db
 from google.appengine.ext.db import polymodel
 
-from model.extras import PickleProperty
+from model.extras import PickleProperty, PlainStringProperty 
 
 
 
 class Source(db.Model):
     "UNID for Key name; Alias for parent. "
-    source = db.TextProperty()
+    contents = db.TextProperty()
     "Source stream or cached stream for remote documents"
     doctree = PickleProperty()
     "Cached doctree"
@@ -19,15 +19,25 @@ class Pending(db.Model):
 class SourceInfo(polymodel.PolyModel):
     "Digest for Key Name; Source for parent. "
     "Basic metadata for SourceStorage. "
+    stamp = db.DateTimeProperty()
     time = db.DateTimeProperty()
-    "UTC date for source. "
-    digest = db.StringProperty()
+    "FIXME: UTC? datetime for source. "
+    #digest = db.StringProperty()
+    @property
+    def digest(self):
+        return str(self.key().name())
     "MD5-hash hex-digest for source. "
+    charset = PlainStringProperty()
+    ""
+    length = db.IntegerProperty()
+    "The size in characters. "
+    size = db.IntegerProperty()
+    "The size in bytes. "
     filename = db.StringProperty()
     "Local name-part of Source UNID. "
     errors = db.TextProperty()
     "Picked list of system_message's. "
-    format = db.StringProperty(default='rst')
+    format = PlainStringProperty(default='rst')
     public = db.BooleanProperty(default=False)
 
 class SourceDependencies(db.Model):

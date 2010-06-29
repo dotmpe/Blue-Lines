@@ -838,7 +838,8 @@ class Process(DuBuilderPage):
     @http_qwds(':v','rst:text','unid:unicode','format:str',qwd_method='both')
     @web_auth
     @init_alias
-    @conneg_old
+    @out(interface.IBlueLinesXML, 'api')
+    #@conneg_old
     def post(self, user, v, alias, rst=None, unid=None, format=None):
         # XXX: alias access and source process privileges
         if unid and not isinstance(unid, basestring):
@@ -848,11 +849,11 @@ class Process(DuBuilderPage):
                 raise exception.ValueError, \
                         "You (%s) are not owner of Alias %r" % \
                         (user.email, alias.handle)
-        if alias.unid_includes_ext:
-            assert not format, \
-                    "Use extension, refer to doc for unid_includes_ext"
-        else:
-            assert format, "Need source format"
+        #if alias.unid_includes_format:
+        #    assert not format, \
+        #            "Use extension, refer to doc for unid_includes_ext"
+        #else:
+        #    assert format, "Need source format"
         self.server._reload(alias)
         return self.server.process(unid, rst, format)
 

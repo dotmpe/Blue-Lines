@@ -4,6 +4,7 @@ TODO: fix srcinfo digest
 import logging
 import hashlib
 import pickle
+import datetime
 
 import _conf
 # Third party
@@ -17,6 +18,9 @@ import api
 from model.alias import Alias
 from model.source import Source, SourceInfo, SourceDependencies
 
+
+
+logger = logging.getLogger(__name__)
 
 
 ## Nabu-like storage
@@ -45,13 +49,13 @@ class SourceStorage:
             unid = src.key().name()
             for srcinfo in SourceInfo.all().ancestor(src):
                 srcinfo.delete()
-                logging.info("Deleted SourceInfo for %s" % unid)
+                logger.info("Deleted SourceInfo for %s" % unid)
             src.delete()
-            logging.info("Deleted Source %s" % unid)
+            logger.info("Deleted Source %s" % unid)
             yield unid
 
     def add(self, alias, unid, contents, digest='', time=None, 
-            encoding='utf-8', doctree=None, 
+            charset='utf-8', doctree=None, 
             errors='', docpickled=None, public=False):
         assert isinstance(alias, Alias), "Need Alias, not %s" % type(alias)
         assert isinstance(unid, basestring)
@@ -60,24 +64,28 @@ class SourceStorage:
         assert not contents or isinstance(contents, unicode),\
                 "Need unicode source, not %s" % type(contents)
         if not digest:
+            assert contents
             m = hashlib.md5(contents)
             digest = m.hexdigest()
         assert digest and isinstance(digest, str)
-        if doctree and not docpickled:
-            doctree.reporter = None
-            docpickled = pickle.dumps(doctree)
+        #if doctree and not docpickled:
+        #    doctree.reporter = None
+        #    docpickled = pickle.dumps(doctree)
         # Create Source entity            
         src = Source(key_name=unid, parent=alias, 
-            source=contents, doctree=docpickled)
+            contents=contents, doctree=doctree)
         src.put()
         # Create SourceInfo entity            
         srcinfo = SourceInfo( key_name=digest, parent=src, 
-                time=time, public=public, digest=digest, errors=errors ) 
+                stamp=datetime.datetime.now(),
+                time=time, public=public, errors=errors, 
+                charset=charset,
+                length=len(contents), size=len(contents.encode(charset)) ) 
         srcinfo.put()
         # Create SourceDependencies
         self.add_dependencies(alias, unid, [], reset=True, info=srcinfo,
                 doctree=doctree)
-        logging.info("Added Source %s" % unid)
+        logger.info("Added Source %s" % unid)
         return src, srcinfo
 
     def add_dependencies(self, alias, unid, depids=[], reset=False, info=None,
@@ -91,14 +99,14 @@ class SourceStorage:
                 assert doctree, (unid, doctree)
                 doctree = pickle.loads(doctree)
             depids = [ p for p in doctree.settings.record_dependencies.list ]
-        logging.info("Storing for %s deps %s", unid, depids)
+        logger.info("Storing for %s deps %s", unid, depids)
         deps = []            
         for src in depids:
             if notisinstance(src, db.Key):
                 src = key(alias, src)
             deps.append(src)
         srcdeps = SourceDependencies(parent=info, dependencies=deps)
-        #logging.info(srcdeps)
+        #logger.info(srcdeps)
         if depids:
             assert False
 

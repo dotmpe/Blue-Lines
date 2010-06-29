@@ -11,6 +11,28 @@ from google.appengine.api import users
 from google.appengine.ext import db
 
 
+class PlainStringProperty(db.Property):
+  """ASCII..
+  """
+
+  data_type = str
+
+  def get_value_for_datastore(self, model_instance):
+    value = self.__get__(model_instance, model_instance.__class__)
+    if value is not None:
+      return value
+
+  def make_value_from_datastore(self, value):
+    if value is not None:
+      return str(value)                
+
+  def default_value(self):
+    """If possible, copy the value passed in the default= keyword argument.
+    This prevents mutable objects such as dictionaries from being shared across
+    instances."""
+    return copy.copy(self.default)
+
+    
 def DerivedProperty(func=None, *args, **kwargs):
   """Implements a 'derived' datastore property.
 

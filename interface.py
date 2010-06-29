@@ -70,6 +70,8 @@ class IQueryResult(ISchema): pass
 #class IParams(interface.Interface): pass
 classImplements(db.Query, IQuery)
 
+class IResult(interface.Interface): pass
+
 
 from docutils import nodes
 
