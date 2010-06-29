@@ -350,6 +350,14 @@ def fetch_source(alias, unid):
     assert src, "No SourceInfo %s" % unid
     return src
 
+#def get_url(alias, info):
+#    source_id = unid.replace('~'+alias.handle, alias.remote_path)
+#    if format:
+#        if not alias.unid_includes_format or \
+#                alias.strip_extension:
+#            source_id += '.'+ format
+#    return source_id
+
 def document_new(unid, **props):
     builder = util.get_builder(props.get('builder', 'bluelines.Document'))
     specs = (

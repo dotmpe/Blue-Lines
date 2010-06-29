@@ -594,8 +594,8 @@ class LocalPage(DuBuilderPage):
             else:
                 return self.not_found(unid)
         if not format: format='html'
-        return mediatype_for_extension(format),\
-                self.server.publish(unid, publish_conf=format)
+        output = self.server.publish(unid, publish_conf=format).output
+        return mediatype_for_extension(format), output
 
 
 class StaticPage(DuBuilderPage):
@@ -607,29 +607,33 @@ class StaticPage(DuBuilderPage):
     @http_qwds(':str',':ext','expose_settings:bool', 'expose_specs:bool')
     @mime
     def get(self, doc_name, format, **params):
-        alias = api.find_alias(None,'Blue Lines')
-        assert alias, "Blue Lines has not been initialized. "
+        if self.is_devhost():
+            alias = api.find_alias(None,'BL Dev')
+            assert alias, "BL Dev has not been initialized. "
+        else:            
+            alias = api.find_alias(None,'Blue Lines')
+            assert alias, "Blue Lines has not been initialized. "
         if not doc_name:
             doc_name = alias.default_page
         elif doc_name.endswith('/'):
             doc_name += alias.default_leaf
-        unid = "~Blue Lines/%s" % doc_name
+        unid = "~%s/%s" % (alias.handle, doc_name)
         logger.info("StaticPage GET %s", unid)
         self.server._reload(alias)
-        stat = self.server.stat(unid)
-        if not stat:
-            logger.info("StaticPage: %s needs (re)proc.", unid)
-            # TODO: work in progress..
-            #return self.multistep(API+'/process', self.request.uri)
-            srcinfo = self.server.get(unid)
-            doc, msgs = self.server.process(srcinfo, unid,
-                    settings_overrides=params)
-            assert not doc.transform_messages, map(lambda x:x.astext(),
-                    doc.transform_messages)
+        #stat = self.server.stat(unid)
+        #if not stat:
+        #    logger.info("StaticPage: %s needs (re)proc.", unid)
+        #    # TODO: work in progress..
+        #    #return self.multistep(API+'/process', self.request.uri)
+        #    srcinfo = self.server.get(unid)
+        #    doc, msgs = self.server.process(srcinfo, unid,
+        #            settings_overrides=params)
+        #    assert not doc.transform_messages, map(lambda x:x.astext(),
+        #            doc.transform_messages)
         # Now render the result into a BL page 
         if not format: format='html'
-        return mediatype_for_extension(format),\
-            self.server.publish(unid, format)
+        output = self.server.publish(unid, format).output
+        return mediatype_for_extension(format), output
 
 
 # Restfull API
@@ -685,6 +689,7 @@ class Alias(DuBuilderPage):
     @http_qwds(':v',':l',':unicode', 'handle:unicode',
             'proc-config:str','public:bool','remote-path:str',
             'default-title:unicode','default-page:unicode','default-leaf:unicode',
+            'unid-includes-format:bool', 'strip-extension:bool',
             )#qwd_method='both')
     @web_auth
     @out(interface.IBlueLinesXML, 'api')
@@ -851,7 +856,7 @@ class Process(DuBuilderPage):
                         (user.email, alias.handle)
         #if alias.unid_includes_format:
         #    assert not format, \
-        #            "Use extension, refer to doc for unid_includes_ext"
+        #            "Use extension, refer to doc for unid_includes_format"
         #else:
         #    assert format, "Need source format"
         self.server._reload(alias)
@@ -862,20 +867,19 @@ class Process(DuBuilderPage):
 class Publish(DuBuilderPage):
     pattern = API + '/publish'
 
-    @http_qwds(':v','unid:unicode','format:str','config:str', 
-            qwd_method='both')
+    @http_qwds(':v','unid:unicode','format:str', qwd_method='both')
     @web_auth
     @init_alias
-    @conneg_old
-    def post(self, user, v, alias, unid='', format='html', config=None):
+    #@out(interface.IBlueLinesXML, 'api')
+    @mime
+    def post(self, user, v, alias, unid='', format='html'):
         # XXX: alias access and source process privileges
         if not unid or not isinstance(unid, basestring):
             raise TypeError, "Need UNID, not %s" % type(unid)
-        logger.info(alias)
         self.server._reload(alias)
-        out = self.server.publish(unid, format)
-        logger.info(format)
-        return format, out
+        # XXX: todo, conneg
+        return mediatype_for_extension(format), \
+                self.server.publish(unid, format).output
 
 class Sources(DuBuilderPage):
     "List UNID, digests for Alias and (partial) localname. "

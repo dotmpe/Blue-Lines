@@ -14,7 +14,7 @@ List of Requirements, an dynamic document on the current state of the project.
   - Use ProcessConfiguration to build/process documents.
   - Use PublishConfiguration to render/publish documents.
   - Keep shared settings (across both phases, ie. proc. & pub.) in
-  	BuilderConfiguration. 
+    BuilderConfiguration. 
 
 - Initialize and update Aliases using HTTP.  
 
@@ -33,14 +33,14 @@ List of Requirements, an dynamic document on the current state of the project.
 - Publish unid to format(, fragment).  
 
   - As many formats.. as there are PublishConfigurations for the current
-  	BuilderConfiguration.
+    BuilderConfiguration.
 
 - Serve published format for known sources.  
 
 - Serve published format for project files.
 
   - Use Alias 'Blue Lines' for blue-lines.appspot.com and 'BL Dev' for localhost
-  	content.
+    content.
 
 
 - TODO: Dependency tracking (deal with circular refs?)

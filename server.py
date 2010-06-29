@@ -69,6 +69,8 @@ class BlueLines:
         "Called after _reload, reset private vars. "
         # XXX: allow extra overrides or make this private?
         self.__assert_alias()
+        logging.info("Initializing %s, %s", self.alias.handle,
+                settings_overrides)
         self.overrides = BlueLines.overrides.copy()
         if settings_overrides:
             self.overrides.update(settings_overrides)
@@ -105,10 +107,7 @@ class BlueLines:
         # Set private props, see _initialize
         self._initialize()
         unid = self.__assert_unid(unid, format)
-        if hasattr(self.alias, 'remote_path'):
-            self.__fetch_remote(unid, source, format)
-        else:
-            self.__fetch(unid, source, format) 
+        self.__fetch(unid, source, format) 
         settings = self.__settings(*self.__conf())
         if self.__needs_rebuild():
             self.__build(unid, settings)
@@ -149,17 +148,20 @@ class BlueLines:
         assert publish_conf and isinstance(publish_conf, basestring), \
                 "Need publish-configuration name, not %s (%s). " % (
                 type(publish_conf), publish_conf)
+        self._initialize()                
         self.__fetch(unid)
-        assert self.__doctree, "Cannot render unbuild source. "
+        self.__assert_doctree(self.__srcinfo.parent().doctree)
         logger.debug("Got request to publish %s", unid)
         buildconf, pconf = self.__conf(publish_conf)
-        doctree.settings = self.__settings(buildconf, pconf)
+        self.__doctree.settings = self.__settings(buildconf, pconf)
         #logger.info(pformat(doctree.settings.__dict__))
         builder = util.get_builder(self.__builder_name, self.allowed_builders)()
         output = builder.render(self.__doctree, unid, writer_name=pconf.writer)
-        return output
+        return PublishResult(unid=unid, alias=self.alias, 
+                doctree=self.__doctree,
+                writer_name=pconf.writer, config=pconf, output=output)
 
-    def stat(self, unid, digest=None):
+    def stat(self, unid, digest=None): # {{{
         """
         Returns True value when UNID is in storage and up to date, or false when
         it needs (re)processing.
@@ -167,33 +169,33 @@ class BlueLines:
         Passing a digest will assure failure when known digest is different.
         Otherwise a remote HTTP request may be needed for remote content.
         """
-        assert ALIAS_re.match(unid), "Invalid aliased ID: %s " % unid
-        info = self.store.getinfo(self.alias, unid).next()
-        if info and digest:
-            if unid_digest != info.digest:
+        self._initialize()
+        self.__assert_alias()
+        self.__srcinfo = self.store.getinfo(self.alias, unid).next()
+        if self.__srcinfo and digest:
+            if unid_digest != self.__srcinfo.digest:
                 logger.info("%s invalidated by digest", unid)
-                return False
+                v =  False
             else:
-                return True
+                v =  True
         elif hasattr(self.alias, 'remote_path'):
             source_id = self.__remote_id(unid)
             logger.info("Checking remote path for %s (%s)", unid, source_id)
             res = None
-            if info:
+            if self.__srcinfo:
                 # Known remote UNID
                 res = model.Resource.get_or_insert(
                         hashlib.md5(source_id).hexdigest(), remote_id=source_id)
-                rst = fetch_uriref(source_id, info.time, res.etag,
-                        info.digest)
+                rst = util.fetch_uriref(source_id, self.__srcinfo.time, res.etag,
+                        self.__srcinfo.digest)
             else:
                 # Check for existince of remote source
-                rst = fetch_uriref(source_id)
+                rst = util.fetch_uriref(source_id)
             if rst:
-                return False
+                v =  False
                 contents, time, etag, digest = rst
                 src = None
                 if info:
-                    src = info.parent()
                     logger.warning("Remote update (%s): %s",
                             self.alias.handle, source_id)
                 else:                    
@@ -201,28 +203,15 @@ class BlueLines:
                             self.alias.handle, source_id)
                     src, info = self.store.add(self.alias, unid, contents,
                             digest=digest, time=time)
-                    #srcdigest = 'Content-MD5'
-                    res = model.Resource.get_or_insert(
-                            digest, remote_id=source_id)
-                assert isinstance(contents, unicode)
-                #src = info.parent()
-                #src.source = contents
-                #src.doctree = None
-                #src.put()
-                #info.digest = digest
-                #info.time = time
-                #info.put()
-                #res.etag = etag
-                #res.put()
-                return False
+                v =  False
             elif info:
-                return True
+                v =  True
             else:
                 raise exception.NotFound(unid)
         else:
-            return False
-        # TODO: adapt value, schema pair to model
-        #return components.queryAdapter([v,IStat],IModel)
+            v =  False
+        return __r_stat(unid, digest, v)
+    # }}}
 
     def getids(self, limit=100, offset=0):
         return model.SourceInfo.ancestor(self.alias).fetch(limit, offset)
@@ -251,8 +240,6 @@ class BlueLines:
         TODO: return some helpfull comments on processed document parts.
         """
 
-    #
-
     def __conf(self, name=None): # {{{
         " Return builder-conf, and proc-conf or named pub-conf. "
         conf = self.alias.proc_config
@@ -277,7 +264,7 @@ class BlueLines:
         return r
         # }}}
 
-    def __remote_id(self, unid, format=None):
+    def __remote_id(self, unid, format=None): # {{{
         source_id = unid.replace('~'+self.alias.handle, self.alias.remote_path)
         if format:
             if not self.alias.unid_includes_format or \
@@ -289,6 +276,7 @@ class BlueLines:
             logger.info("Denied acces to %s. ", source_host)
             raise exception.AccessError("Denied acces to %s. " % source_host)
         return source_id
+    # }}}
 
     def __messages(self, error_level=3, reset=True): # {{{
         self.__assert_doctree()
@@ -303,29 +291,39 @@ class BlueLines:
             doctree.parse_messages = []
             doctree.transform_messages = [] # }}}
 
-    def __fetch(self, unid, contents, format='rst', time=None):
+    def __fetch(self, unid, contents=None, format='rst', time=None): # {{{
+        alias = self.__assert_alias()
+        if hasattr(self.alias, 'remote_path'):
+            self.__fetch_remote(unid, contents, format)
+        else:
+            self.__fetch_local(unid, contents, format) 
+        # }}}            
+
+    def __fetch_local(self, unid, contents, format='rst', time=None): # {{{
         "Set private content and metadata properties. "
         self.__srcinfo = self.store.getinfo(self.alias, unid).next()
         self.__src = self.__srcinfo.parent()
         if not self.__srcinfo or not self.__src.doctree:
             # Accept new contents
+            logger.info("Accepting new local content for %s", unid)
             self.__assert_contents(contents)
             if self.__srcinfo:
                 if not format: format = self.__srcinfo.format
                 assert format == self.__srcinfo.format, \
                                     "Indicated format does not match record."
         else:
+            assert not contents and not format and not time, "Re-using exiting source."
             # Reuse stored source and metadata
             self.__assert_contents(
                     self.__src.contents, 
                     self.__src.doctree)
-            assert not format and not time, "Re-using exiting source."
             # XXX: or allow update.. 
             format = self.__src.format 
             time = self.__src.time 
         self.__assert_datetime(time)
         format = self.__assert_format(format)
         return self.__assert_unid(unid, format)
+    # }}}
 
     def __fetch_remote(self, unid, contents, format=None, time=None,
             digest=None): # {{{
@@ -373,7 +371,7 @@ class BlueLines:
                 self.__doctree = doctree                            
             else:
                 # Fetch new Source
-                logging.info('Retrieving new source. ')
+                logging.info('Retrieving new remote content for %s. ', unid)
                 contents, format, time, etag, digest, charset = \
                                         util.fetch_uriref(source_id, format,
                                                 time, None, digest)
@@ -440,10 +438,10 @@ class BlueLines:
         return buildername
         # }}}
 
-    def __store(self, unid, public):
+    def __store(self, unid, public): # {{{
         "Store result (private props) in Source and SourceInfo. "
-        # XXX: right now require both source and doctree, but 
-        # leniency could be allowed.. not sure its needed.
+        # FIXME: Rewrite this to take all props in iteration
+        # TODO: rewrite storage to API
         digest = self.__assert_digest()
         charset = self.__assert_charset()
         contents = self.__assert_contents()
@@ -451,11 +449,11 @@ class BlueLines:
                 len(contents), digest, charset)
         doctree = self.__assert_doctree()
         time = self.__source_time
-        if self.__errors: errors = dumps(self.__errors)
-        else: errors = None
+        errors = self.__errors or []
         srcinfo = self.store.add(self.alias, unid, contents, digest, 
                 time, charset, doctree, errors, public)
         return srcinfo
+    # }}}
 
     # Return handlers, resets server
     def __r_process(self, unid): # {{{
@@ -466,6 +464,13 @@ class BlueLines:
         self._initialize()
         return pr
     # }}}
+
+    def __r_stat(self, unid, digest, v): # {{{
+        if self.__srcinfo:            
+            return StatResult(srcinfo=self.__srcinfo, alias=self.alias, needs_processing=v)
+        else:
+            return StatResult(unid=unid, alias=self.alias, digest=digest, needs_processing=v)
+        # }}}
 
     # Sanity..
     def __assert_alias(self, alias=None): # {{{
@@ -852,9 +857,12 @@ class Result(object):
         for p in props:
             setattr(self, p, props[p])
 
-class StatResult(Result): pass
-class ProcessResult(Result): pass
+class StatResult(Result):
+    implements(interface.IResult)
+class ProcessResult(Result):
+    implements(interface.IResult)
     #messages = '\n'.join(map(lambda msg:msg.astext(), messages))
-class PublishResult(Result): pass
+class PublishResult(Result):
+    implements(interface.IResult)
 
 

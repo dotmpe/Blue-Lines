@@ -71,6 +71,8 @@ class UserAlias(Alias):
     #process_key = db.StringProperty(required=True)
     #update_key = db.StringProperty(required=True)
 
+    local_path = db.StringProperty()
+
 
 #class Group(Alias):
 #    members = db.ListProperty(db.Key) # User list

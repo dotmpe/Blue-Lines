@@ -174,7 +174,7 @@ def fetch_uriref(uriref, format=None, dt=None, etag=None, md5check=None):
         utctimestamp = email.Utils.mktime_tz(email.Utils.parsedate_tz(
             dtstr))
         dt = datetime.datetime.fromtimestamp( utctimestamp, pytz.utc )
-    etag = info.get('ETag', None)
+    etag = info.get('ETag', None).strip("'\"")
     md5sum = info.get('Content-MD5', '')
     if not md5sum:
         md5sum = hashlib.md5(contents.encode('utf-8')).hexdigest()
@@ -626,8 +626,10 @@ def out(targetInterface, name=''):
         def output_filter_deco(self, *args, **kwds):
             data = method(self, *args, **kwds)
             if interface.IHTTPStatus.providedBy(data):
-                self.error(data.status)
-            blml = components.queryAdapter(data, interface.IBlueLinesXML, 'api')
+                self.response.set_status(data.status)
+            logger.info([data, components.queryAdapter(data, targetInterface,
+                name)])
+            blml = components.queryAdapter(data, targetInterface, name)
             assert blml, "Ouput needed, unable to query adapter for %s" % type(data)
             mediatype = content_types[targetInterface]
             # XXX: unicode...

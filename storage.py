@@ -99,16 +99,16 @@ class SourceStorage:
                 assert doctree, (unid, doctree)
                 doctree = pickle.loads(doctree)
             depids = [ p for p in doctree.settings.record_dependencies.list ]
-        logger.info("Storing for %s deps %s", unid, depids)
-        deps = []            
-        for src in depids:
-            if notisinstance(src, db.Key):
-                src = key(alias, src)
-            deps.append(src)
-        srcdeps = SourceDependencies(parent=info, dependencies=deps)
+        logger.info("TODO: Store for %s deps %s", unid, depids)
+        deps = []
+        #for src in depids:
+        #    if not isinstance(src, db.Key):
+        #        src = ?key(alias, src)
+        #    deps.append(src)
+        #srcdeps = SourceDependencies(parent=info, dependencies=deps)
         #logger.info(srcdeps)
-        if depids:
-            assert False
+        #if depids:
+        #    assert False
 
     def map_unid(self, unid, alias):
         "Rewrite document name to include Alias, "

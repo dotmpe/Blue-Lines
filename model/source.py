@@ -22,23 +22,25 @@ class SourceInfo(polymodel.PolyModel):
     stamp = db.DateTimeProperty()
     time = db.DateTimeProperty()
     "FIXME: UTC? datetime for source. "
-    #digest = db.StringProperty()
     @property
     def digest(self):
         return str(self.key().name())
     "MD5-hash hex-digest for source. "
     charset = PlainStringProperty()
-    ""
+    "A Python string codec. "
     length = db.IntegerProperty()
     "The size in characters. "
     size = db.IntegerProperty()
     "The size in bytes. "
-    filename = db.StringProperty()
-    "Local name-part of Source UNID. "
-    errors = db.TextProperty()
-    "Picked list of system_message's. "
+    #filename = db.StringProperty()
+    #"Used to build URLs, non if same as UNID local-part. "
     format = PlainStringProperty(default='rst')
+    "Content format identifier, maybe used as extension. "
+    errors = PickleProperty()
+    "Picked list of system_message's. "
     public = db.BooleanProperty(default=False)
+    "Wether everyone or owner only has read-access. "
+
 
 class SourceDependencies(db.Model):
     "Dependencies (Source and Resource) needed to publish source.  "

@@ -78,7 +78,8 @@ init_alias()
         -F "default-leaf"=main \
         -F "remote-path"="http://iris:8088" \
         -F "strip-extension"="True" \
-        -F "unid-includes-ext"="False"
+        -F "unid-includes-format"="False" \
+        ;
     print_result $? "Initialized alias:BL Dev" "Error initializing alias:BL Dev"
 #fi;        
 #curl $CURL/alias/Blue%20Lines
@@ -92,11 +93,12 @@ init_alias()
         -F "default-leaf"=main \
         -F "remote-path"="http://blue-lines.appspot.com" \
         -F "strip-extension"="True"\
-        -F "unid-includes-ext"="False"
+        -F "unid-includes-format"="False" \
+        ;
     print_result $? "Initialized alias:Blue Lines" "Error initializing alias:Blue Lines"
 #fi;        
-curl $CURL/alias/Sandbox
-if test $? -ge 1; then
+#curl $CURL/alias/Sandbox
+#if test $? -ge 1; then
     curl $CURL/alias \
         -F handle="Sandbox" \
         -F "default-title"="Sandbox" \
@@ -104,8 +106,11 @@ if test $? -ge 1; then
         -F "proc-config"="bl,bluelines" \
         -F "default-page"=welcome \
         -F "default-leaf"=main 
+        -F "strip-extension"="True"\
+        -F "unid-includes-format"="False" \
+        ;
     print_result $? "Initialized alias:Sandbox" "Error initializing alias:Sandbox"
-fi;        
+#fi;        
 }
 delete_all()
 {
@@ -124,12 +129,12 @@ test_fetch()
     curl $CURL_/config/bl 
 }
 #CURL="-b .cookie.jar -f -o /dev/null http://iris:8080/0.1/dubl"
-#rm .cookie.jar
+rm .cookie.jar
 if test "$1" == 'dev'; then
     CURL_="-b .cookie.jar http://iris:8080/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
-    do_dev_login # first-run bug in GAE-SDK, module not loaded
-    do_dev_login
+#    do_dev_login # first-run bug in GAE-SDK, module not loaded
+#    do_dev_login
 else
     CURL_="-b .cookie.jar http://blue-lines.appspot.com/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
@@ -137,31 +142,38 @@ else
 fi;
 #delete_all
 #test_fetch
-#init_build_config
-#init_proc_config
-#init_pub_config
-#init_alias
+init_build_config
+init_proc_config
+init_pub_config
+init_alias
 #test_fetch
 if test "$1" == 'dev'; then
     curl $CURL/process \
         -F unid="~BL Dev/ReadMe" \
         -F format="rst"
+    curl $CURL_/publish \
+        -F unid="~BL Dev/ReadMe" \
+        -F format=html
 fi;
-#curl $CURL/process \
-#    -F unid="~Blue Lines/ReadMe" 
-#curl $CURL/publish \
-#    -F unid="~Blue Lines/ReadMe" \
-#    -F format=html
+curl $CURL/process \
+    -F unid="~Blue Lines/ReadMe" \
+    -F format="rst"
+curl $CURL/process \
+    -F unid="~Blue Lines/doc/main" \
+    -F format="rst"
+curl $CURL/process \
+    -F unid="~Blue Lines/doc/requirements" \
+    -F format="rst"
+curl $CURL/process \
+    -F unid="~Blue Lines/doc/issues" \
+    -F format="rst"
+curl $CURL/process \
+    -F unid="~Blue Lines/ReadMe" 
+curl $CURL/publish \
+    -F unid="~Blue Lines/ReadMe" \
+    -F format=html
 #curl $CURL_/process \
 #    --data unid="~Sandbox/Test1" \
 #    --data-urlencode rst@"ReadMe.rst" 
 #curl $CURL_/publish \
 #    --data unid="~Sandbox/Test1" 
-#curl $CURL/alias \
-#    -F handle="Blue Lines" \
-#    -F "default-title"="Blue Lines" \
-#    -F public=True \
-#    -F "proc-config"="bl-build,bluelines" \
-#    -F "default-page"=welcome \
-#    -F "default-leaf"=main \
-#    -F "remote-path"="http://iris:8088" 

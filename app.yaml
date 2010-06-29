@@ -69,7 +69,7 @@ skip_files:
 - ^.*\.py[co]$ 
 - ^\.bzr$ 
 # skipped files are excluded from import:
-#- ^lib/[^/]+[^(\.zip|\.egg)]$
+- ^lib/[^/]+[^(\.zip|\.egg)]$
 
 admin_console:
   pages:
