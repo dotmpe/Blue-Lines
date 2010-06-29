@@ -93,11 +93,22 @@ class Document(builder.Builder):
     class ReReader(builder.Builder.ReReader):
         settings_spec = (
             'Blue Lines doctree (re)reader. ',
-            None, (),)
+            None, 
+            generate.PathBreadcrumb.settings_spec +
+            generate.Timestamp.settings_spec +
+            generate.CCLicenseLink.settings_spec +
+            generate.SourceLink.settings_spec +
+            debug.Options.settings_spec +
+            debug.Settings.settings_spec,
+        )
         def get_transforms(self):
             return builder.Builder.ReReader.get_transforms(self) + [
+                generate.PathBreadcrumb,        # 200
+                references.Substitutions,       # 220
                 debug.Settings,                 # 500
                 debug.Options,                  # 500
+                clean.StripSubstitutionDefs,    # 900
+                clean.StripAnonymousTargets,    # 900
             ]
 
 

@@ -54,7 +54,8 @@ init_pub_config()
             -F title="Blue Lines HTML" \
             -F writer="dotmpe-html" \
             -F template="var/du-html-template.txt" \
-            -F stylesheet="/media/style/default.css"
+            -F stylesheet="/media/style/default.css" \
+            -F breadcrumb=yes
         print_result $? "Initialized config:bl:html" "Error initializing config:bl:html"
 #    fi;
     curl $CURL/config/bl/publish/xml
@@ -105,8 +106,8 @@ init_alias()
         -F public=True \
         -F "proc-config"="bl,bluelines" \
         -F "default-page"=welcome \
-        -F "default-leaf"=main 
-        -F "strip-extension"="True"\
+        -F "default-leaf"=main \
+        -F "strip-extension"="True" \
         -F "unid-includes-format"="False" \
         ;
     print_result $? "Initialized alias:Sandbox" "Error initializing alias:Sandbox"
@@ -133,8 +134,8 @@ rm .cookie.jar
 if test "$1" == 'dev'; then
     CURL_="-b .cookie.jar http://iris:8080/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
-#    do_dev_login # first-run bug in GAE-SDK, module not loaded
-#    do_dev_login
+    do_dev_login # first-run bug in GAE-SDK, module not loaded
+    do_dev_login
 else
     CURL_="-b .cookie.jar http://blue-lines.appspot.com/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
@@ -151,7 +152,7 @@ if test "$1" == 'dev'; then
     curl $CURL/process \
         -F unid="~BL Dev/ReadMe" \
         -F format="rst"
-    curl $CURL_/publish \
+    curl $CURL/publish \
         -F unid="~BL Dev/ReadMe" \
         -F format=html
 fi;

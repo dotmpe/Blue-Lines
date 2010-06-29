@@ -174,7 +174,7 @@ def fetch_uriref(uriref, format=None, dt=None, etag=None, md5check=None):
         utctimestamp = email.Utils.mktime_tz(email.Utils.parsedate_tz(
             dtstr))
         dt = datetime.datetime.fromtimestamp( utctimestamp, pytz.utc )
-    etag = info.get('ETag', None).strip("'\"")
+    etag = info.get('ETag', '').strip("'\"") or None
     md5sum = info.get('Content-MD5', '')
     if not md5sum:
         md5sum = hashlib.md5(contents.encode('utf-8')).hexdigest()
@@ -238,6 +238,7 @@ def get_publish_spec(conf):
     builder = get_builder(conf.parent().builder)
     specs = (
             builder,
+            builder.ReReader,
             get_writer_class(conf.writer),
         )
     return specs
