@@ -1,0 +1,168 @@
+/** Links and anchors */
+:link { }
+:visited { }
+:hover { }
+:active { }
+:target {
+    border: .1em dotted #3465a4;
+}
+a {
+    text-decoration: none;
+}
+/* classes should be provided for compatible CSS level 3 selectors.
+/* In-site links: Sky Blue */
+a.reference.local, a[href] { color:#204a87; }
+a.reference.local:visited, a[href]:visited { color:#729fcf; }
+a.reference.local:hover, a[href]:hover { 
+    border-bottom:.1em solid #204a87; 
+	color:#555753; 
+}
+
+/* External links: Orange */
+a.reference.global, a[href^='http'] { color:#f57900; }
+a.reference.global:visited, a[href^='http']:visited { color:#fcaf3e; }
+a.reference.global:hover, a[href^='http']:hover {
+	border-bottom:.1em solid #f57900;
+	color:#555753; 
+}
+
+/* E-Mail references */
+a.email, a[href^='mailto:'] { color: #ad7fa8; }
+a.email:visited, a[href^='mailto:']:visited {}
+a.email:hover, a[href^='mailto:']:hover { 
+    border-bottom: .1em solid #ad7fa8; 
+	color:#555753; 
+}
+
+/* File, FTP, and misc. URI */
+a.file, a[href^='file:'], a[href^='ftp:']
+{
+    color: #c17d11;
+}
+a.file:visited, a[href^='file:']:visited, a[href^='ftp:']:visited 
+{
+    color: #e9b96e;
+}
+a.file:hover, a[href^='file:']:hover, a[href^='ftp:']:hover 
+{
+    color: #555753;
+    border-bottom: .1em solid #c17d11;
+}
+
+/* Other dynamic evalutated anchors */
+/* Fragment anchors */
+/* Resource parameter anchors (other arguments, same URL), gray */
+a.function, a[href^='javascript:'],
+a.fragment, a[href^='#'],
+a.query, a[href^='?'] { 
+    color:slategray; }
+a.function:hover, a[href^='javascript:']:hover,
+a.fragment:hover, a[href^='#']:hover,
+a.query:hover, a[href^='?']:hover {
+	color:#555753; 
+	border-bottom:.1em solid slategray; }
+
+
+
+/** Box model */
+* {
+  /*  border: 1px solid silver;*/
+}
+
+code/* Typewriter Text */{
+    font-size: 1.1em;
+}
+
+tt/* Typewriter Text */{
+    font-size: 1.1em;
+}
+
+input[type=submit]
+{
+    float: right;
+}
+
+.document tr.form-field td.field-body
+{
+}
+.document tr.form-field .field-body p
+{
+    margin-bottom: 1em;
+}
+.document tr.form-field .field-body :first-child
+{
+    margin-top: 0;
+}
+.problematic
+{
+/*	'Orange': (0xfcaf3e, 0xf57900, 0xce5c00),*/
+    border-bottom: .1em solid #ef2929;
+    background-color: #fce8ca;
+    padding: 0 .5em;
+    margin: 0 .2em;
+}
+
+.document .system-message
+{
+    border-width: 0; /* reset */
+    border-left: .5em solid #888a85;
+    padding: 0 0 0 1em;
+}
+.document .system-message-title
+{
+    border-bottom: .2em solid #d3d7cf;
+    font-weight: bold;
+}
+.system-message.debug
+{
+    border-left: .5em solid #8f5902;
+}
+.system-message.info
+{
+    border-left: .5em solid #4e9a06;
+}
+.system-message.warning
+{
+    border-left: .5em solid #cc0000;
+}
+.system-message.error
+{
+    border-left: .5em solid #ef2929;
+}
+.system-message.critical
+{
+    border-left: .5em solid #fce94f;
+}
+
+hr {
+    border:0;
+    height: .1em;
+    color:#888a85;
+    background-color:#888a85;
+}
+
+/** Blue Lines */
+#user-bar
+{
+/*    float: right;*/
+}
+/* jQ AC */
+.ac_results 
+{
+    background-color: #eeeeec;
+    bordeR: 1px solid #babdb6;
+}
+.ac_results ul  {
+    padding: 0; margin: 0;
+    bordeR: 1px solid #888a85;
+}
+.ac_results ul li.ac_over { 
+    background-color: #729fcf;
+    color: #eeeeec;
+}
+.ac_results ul li.ac_even { }
+.ac_results ul li strong {}
+
+
+
+

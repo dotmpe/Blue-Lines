@@ -3,6 +3,8 @@ import traceback
 import functools
 import re
 import base64
+import binascii
+import hashlib
 import logging
 import sets
 import email
@@ -162,6 +164,8 @@ def fetch_uriref(uriref, format=None, dt=None, etag=None, md5check=None):
             else:
                 raise exception.RemoteError(e)
         #assert e.code == 200, str(e.code) +' '+ e.message
+    if etag or dt:        
+        logger.info("Remote server responded with content for conditional request. ")
     # XXX: res.geturl() == uriref ?
     contents = res.read()
     #if not contents:
@@ -169,20 +173,25 @@ def fetch_uriref(uriref, format=None, dt=None, etag=None, md5check=None):
     info = res.info()
     encoding = get_param(info.get('Content-Type', ''), 'charset', 'ascii')
     contents = unicode(contents, encoding)
+    md5sum = info.get('Content-MD5', '') 
+    if md5sum:
+        md5sum = binascii.hexlify(base64.decodestring(md5sum))
+    else:        
+        md5sum = hashlib.md5(contents.encode(encoding)).hexdigest()
+    if md5check:
+        if md5sum == md5check:
+            return
+        logger.info("Remote content %s invalidated by digest", uriref)
+    assert isinstance(md5sum, str)
     dtstr = info.get('Last-Modified', None)
     if dtstr:
         utctimestamp = email.Utils.mktime_tz(email.Utils.parsedate_tz(
             dtstr))
         dt = datetime.datetime.fromtimestamp( utctimestamp, pytz.utc )
     etag = info.get('ETag', '').strip("'\"") or None
-    md5sum = info.get('Content-MD5', '')
-    if not md5sum:
-        md5sum = hashlib.md5(contents.encode('utf-8')).hexdigest()
-    if md5check:
-        if md5sum == md5check:
-            return
-    assert isinstance(md5sum, str)
     # Data was updated
+    logger.info("New remote content for %s (etag=%s; dt=%s; md5sum=%s)", 
+            uriref, etag, dt, md5sum)
     return contents, format, dt, etag, md5sum, encoding
 
 

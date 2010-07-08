@@ -33,10 +33,14 @@ update-docs:
 	# TODO: nabu has no --quiet option
 
 loc: loc.txt
-	@echo Project has `cat $@.txt|grep total -|sed 's/total//'` Python Lines of Code.
+	@echo Project has `cat $@.txt|grep total -|sed 's/total//'` Lines of Python Code.
 
 loc.txt: ./*.py */*.py
 	@wc -l *.py {extractor,decorator,model,tag}/*.py > $@
+
+
+TODO.txt: * 
+	@rgrep -n --colour=auto TODO * {decorator,doc,extractor,model,tag,var}/* > $@
 
 
 # vim:noet: 

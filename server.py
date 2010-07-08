@@ -83,10 +83,11 @@ class BlueLines:
         self.__source_digest = None
         self.__source_charset = None
         self.__source_time = None
+        self.__source_format = None
         self.__reports = []
         self.__errors = []
         self.__src = None
-        self.__srcinfo = None
+        self.__srcnfo = None
         # }}}
 
     def new_config(self, name, **props):
@@ -100,7 +101,8 @@ class BlueLines:
         return api.document_new(unid, **props)
 
     def process(self, unid, source=None, format=None, 
-            validation_level=2, store_invalid=True): # {{{
+            validation_level=2, store_invalid=True): 
+        # {{{
         """
         """
         logger.info("BL: Started processing on UNID %s", unid)
@@ -110,6 +112,10 @@ class BlueLines:
         self.__fetch(unid, source, format) 
         settings = self.__settings(*self.__conf())
         if self.__needs_rebuild():
+            if self.__srcnfo:
+                self.__srcnfo.delete()
+                self.__srcnfo = None
+                logger.debug("Deleted source info")
             self.__build(unid, settings)
             # Capture messages from build..
             self.__messages(error_level=validation_level, reset=True)
@@ -150,7 +156,7 @@ class BlueLines:
                 type(publish_conf), publish_conf)
         self._initialize()                
         self.__fetch(unid)
-        self.__assert_doctree(self.__srcinfo.parent().doctree)
+        self.__assert_doctree(self.__srcnfo.parent().doctree)
         logger.debug("Got request to publish %s", unid)
         buildconf, pconf = self.__conf(publish_conf)
         self.__doctree.settings = self.__settings(buildconf, pconf)
@@ -171,46 +177,48 @@ class BlueLines:
         """
         self._initialize()
         self.__assert_alias()
-        self.__srcinfo = self.store.getinfo(self.alias, unid).next()
-        if self.__srcinfo and digest:
-            if unid_digest != self.__srcinfo.digest:
+        self.__srcnfo = self.store.getinfo(self.alias, unid).next()
+        if self.__srcnfo and digest:
+            if unid_digest != self.__srcnfo.digest:
                 logger.info("%s invalidated by digest", unid)
-                v =  False
+                v = 0
             else:
-                v =  True
+                v = 1
         elif hasattr(self.alias, 'remote_path'):
-            source_id = self.__remote_id(unid)
-            logger.info("Checking remote path for %s (%s)", unid, source_id)
+            if self.__srcnfo:
+                format = self.__srcnfo.format
+            else:                
+                format = self.alias.default_source_format
+            source_id = self.__remote_id(unid, format)
+            logger.debug("Checking remote path for %s (%s)", unid, source_id)
             res = None
-            if self.__srcinfo:
+            if self.__srcnfo:
                 # Known remote UNID
                 res = model.Resource.get_or_insert(
                         hashlib.md5(source_id).hexdigest(), remote_id=source_id)
-                rst = util.fetch_uriref(source_id, self.__srcinfo.time, res.etag,
-                        self.__srcinfo.digest)
+                src = util.fetch_uriref(source_id, format, 
+                        self.__srcnfo.time, res.etag, self.__srcnfo.digest)
             else:
                 # Check for existince of remote source
-                rst = util.fetch_uriref(source_id)
-            if rst:
-                v =  False
-                contents, time, etag, digest = rst
+                src = util.fetch_uriref(source_id)
+            if src:
+                #v = src
+                contents, format, time, etag, digest, charset = src
                 src = None
-                if info:
-                    logger.warning("Remote update (%s): %s",
+                if self.__srcnfo:
+                    logger.info("Remote update (%s): %s",
                             self.alias.handle, source_id)
                 else:                    
-                    logger.warning("New remote source (%s): %s ", 
+                    logger.info("New remote source (%s): %s ", 
                             self.alias.handle, source_id)
-                    src, info = self.store.add(self.alias, unid, contents,
-                            digest=digest, time=time)
-                v =  False
-            elif info:
-                v =  True
+                v = 0
+            elif self.__srcnfo:
+                v = 1
             else:
                 raise exception.NotFound(unid)
         else:
-            v =  False
-        return __r_stat(unid, digest, v)
+            v = 0
+        return self.__r_stat(unid, digest, v)            
     # }}}
 
     def getids(self, limit=100, offset=0):
@@ -265,11 +273,11 @@ class BlueLines:
         # }}}
 
     def __remote_id(self, unid, format=None): # {{{
+        "Get the URL of a remote source. "
         source_id = unid.replace('~'+self.alias.handle, self.alias.remote_path)
-        if format:
-            if not self.alias.unid_includes_format or \
-                    self.alias.strip_extension:
-                source_id += '.'+ format
+        format = format or self.alias.default_source_format
+        if not unid.endswith('.'+format):
+            source_id += '.'+ format
         # Only run for selected hosts for now
         source_host = urlparse.urlparse(source_id)[1]
         if self.allowed_hosts and source_host not in self.allowed_hosts:
@@ -291,7 +299,7 @@ class BlueLines:
             doctree.parse_messages = []
             doctree.transform_messages = [] # }}}
 
-    def __fetch(self, unid, contents=None, format='rst', time=None): # {{{
+    def __fetch(self, unid, contents=None, format=None, time=None): # {{{
         alias = self.__assert_alias()
         if hasattr(self.alias, 'remote_path'):
             self.__fetch_remote(unid, contents, format)
@@ -299,17 +307,17 @@ class BlueLines:
             self.__fetch_local(unid, contents, format) 
         # }}}            
 
-    def __fetch_local(self, unid, contents, format='rst', time=None): # {{{
+    def __fetch_local(self, unid, contents, format=None, time=None): # {{{
         "Set private content and metadata properties. "
-        self.__srcinfo = self.store.getinfo(self.alias, unid).next()
-        self.__src = self.__srcinfo.parent()
-        if not self.__srcinfo or not self.__src.doctree:
+        self.__srcnfo = self.store.getinfo(self.alias, unid).next()
+        self.__src = self.__srcnfo.parent()
+        if not self.__srcnfo or not self.__src.doctree:
             # Accept new contents
             logger.info("Accepting new local content for %s", unid)
             self.__assert_contents(contents)
-            if self.__srcinfo:
-                if not format: format = self.__srcinfo.format
-                assert format == self.__srcinfo.format, \
+            if self.__srcnfo:
+                if not format: format = self.__srcnfo.format
+                assert format == self.__srcnfo.format, \
                                     "Indicated format does not match record."
         else:
             assert not contents and not format and not time, "Re-using exiting source."
@@ -321,7 +329,6 @@ class BlueLines:
             format = self.__src.format 
             time = self.__src.time 
         self.__assert_datetime(time)
-        format = self.__assert_format(format)
         return self.__assert_unid(unid, format)
     # }}}
 
@@ -336,38 +343,38 @@ class BlueLines:
             source_id = self.__remote_id(unid, format)
             res = model.Resource.get_or_insert(
                     hashlib.md5(source_id).hexdigest(), remote_id=source_id )
-            self.__srcinfo = self.store.getinfo(self.alias, unid).next()
+            self.__srcnfo = self.store.getinfo(self.alias, unid).next()
             etag = None
-            if self.__srcinfo:
+            if self.__srcnfo:
                 # XXX: or allow local update, see assert format later on
                 assert not time and not digest, \
                         "Re-using exiting source."
                 # Fetch updated only
                 remote_update = util.fetch_uriref(
-                        source_id, self.__srcinfo.format,
-                        self.__srcinfo.time, res.etag,
-                        self.__srcinfo.digest)
+                        source_id, self.__srcnfo.format,
+                        self.__srcnfo.time, res.etag,
+                        self.__srcnfo.digest)
                 if remote_update:
                     logger.info('Remote updated')
                     contents, format, time, etag, digest, charset = \
                             remote_update
                     doctree = None
-                    if format and self.__srcinfo.format:
-                        assert format == self.__srcinfo.format, \
+                    if format and self.__srcnfo.format:
+                        assert format == self.__srcnfo.format, \
                                 "Remote format changed."
                 else:
-                    if format and self.__srcinfo.format:
-                        assert format == self.__srcinfo.format, \
+                    if format and self.__srcnfo.format:
+                        assert format == self.__srcnfo.format, \
                                 "Indicated format does not match record."
                     if not self.__src:
-                        self.__src = self.__srcinfo.parent()
+                        self.__src = self.__srcnfo.parent()
                     contents, format, doctree, time, digest, charset = \
                             self.__src.contents, \
-                            self.__srcinfo.format, \
+                            self.__srcnfo.format, \
                             self.__src.doctree, \
-                            self.__srcinfo.time, \
-                            self.__srcinfo.digest, \
-                            self.__srcinfo.charset
+                            self.__srcnfo.time, \
+                            self.__srcnfo.digest, \
+                            self.__srcnfo.charset
                 self.__doctree = doctree                            
             else:
                 # Fetch new Source
@@ -390,12 +397,12 @@ class BlueLines:
         if self.__doctree:
             str = self.__assert_contents()
             digest = hashlib.md5(str).hexdigest()
-            if not self.__srcinfo:
+            if not self.__srcnfo:
                 self.__source_digest = digest
                 return True
             else:
                 self.__source_digest = digest
-                return self.__srcinfo.digest != digest
+                return self.__srcnfo.digest != digest
         else:
             return True 
         # }}}
@@ -450,9 +457,9 @@ class BlueLines:
         doctree = self.__assert_doctree()
         time = self.__source_time
         errors = self.__errors or []
-        srcinfo = self.store.add(self.alias, unid, contents, digest, 
+        srcnfo = self.store.add(self.alias, unid, contents, digest, 
                 time, charset, doctree, errors, public)
-        return srcinfo
+        return srcnfo
     # }}}
 
     # Return handlers, resets server
@@ -466,10 +473,10 @@ class BlueLines:
     # }}}
 
     def __r_stat(self, unid, digest, v): # {{{
-        if self.__srcinfo:            
-            return StatResult(srcinfo=self.__srcinfo, alias=self.alias, needs_processing=v)
+        if self.__srcnfo:            
+            return StatResult(unid=unid, stat=v, srcnfo=self.__srcnfo, alias=self.alias, needs_processing=v)
         else:
-            return StatResult(unid=unid, alias=self.alias, digest=digest, needs_processing=v)
+            return StatResult(unid=unid, stat=v, srcnfo=None, alias=self.alias, digest=digest, needs_processing=v)
         # }}}
 
     # Sanity..
@@ -483,25 +490,16 @@ class BlueLines:
         # }}}
 
     def __assert_unid(self, unid, format=None): # {{{
-        "Accept input UNID, and always return storage UNID."
+        "Accept input UNID, and return storage UNID."
         assert unid and isinstance(unid, basestring) and \
                 ALIAS_re.match(unid), \
                 "Invalid aliased ID: %s " % unid
         self.__assert_alias()
         assert unid[1:].startswith(self.alias.handle), \
                 "Improper UNID for alias. "
-        if format:
-            if self.alias.unid_includes_format: 
-                if self.alias.strip_extension:
-                    if unid.endswith('.'+format):
-                        unid = unid[:-len(format)]
-                elif not unid.endswith('.'+format):
-                    unid += '.'+format
-            else:
-                if self.alias.strip_extension:
-                    assert unid.endswith('.'+format)
-                    unid = unid[:-len(format)]
-            self.__assert_format(format)                    
+        format = self.__assert_format(format)                    
+        if unid.endswith('.'+format):
+            unid = unid[:-len(format)]
         return unid
     # }}}
 
@@ -521,7 +519,7 @@ class BlueLines:
 
     def __assert_format(self, format=None): # {{{
         if not format: format = self.__source_format
-        assert format == 'rst', format
+        assert format == 'rst', "rst only: "+str(format)
         self.__source_format = format
         return format
         # }}}
@@ -859,6 +857,10 @@ class Result(object):
 
 class StatResult(Result):
     implements(interface.IResult)
+
+    def __nonzero__(self):
+        return self.stat
+
 class ProcessResult(Result):
     implements(interface.IResult)
     #messages = '\n'.join(map(lambda msg:msg.astext(), messages))

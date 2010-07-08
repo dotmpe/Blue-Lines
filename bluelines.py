@@ -13,7 +13,7 @@ from docutils.transforms import universal, references, frontmatter, misc,\
         writer_aux
 from dotmpe.du import builder, form, util
 from dotmpe.du.ext.reader import mpe
-from dotmpe.du.ext.writer import htmlform
+from dotmpe.du.ext.writer import htmlform, html
 from dotmpe.du.ext.transform import generate, form1, clean, debug
 from dotmpe.du.ext.extractor import form2
 import dotmpe.du.ext.parser.rst.directive
@@ -21,6 +21,7 @@ import dotmpe.du.ext.parser.rst.directive
 # BL local
 import _conf
 import util
+import transform
 import extractor
 
 "XXX: Override include directive registration. "
@@ -72,8 +73,8 @@ class Document(builder.Builder):
     }
 
     extractors = [
-        #(extractor.RecordDependencies, extractor.DependencyStorage),            
-        #(reference.Extractor, reference.ReferenceStorage()),
+        (extractor.RecordDependencies, extractor.DependencyStorage),
+        (extractor.ReferenceExtractor, extractor.ReferenceStorage),
         #(extractor.Contact
         #(extractor.docinfo, extractor.docinfo)
     ]
@@ -87,29 +88,54 @@ class Document(builder.Builder):
         config_section_dependencies = ('readers',)
         def get_transforms(self):
             tx = mpe.Reader.get_transforms(self)
-            #tx.remove( generate.PathBreadcrumb )
+            tx.remove( generate.PathBreadcrumb )
+            tx.remove( generate.SourceLink )
+            tx.remove( generate.CCLicenseLink )
+            tx.remove( generate.Timestamp )
             return tx
 
     class ReReader(builder.Builder.ReReader):
         settings_spec = (
             'Blue Lines doctree (re)reader. ',
             None, 
-            generate.PathBreadcrumb.settings_spec +
-            generate.Timestamp.settings_spec +
-            generate.CCLicenseLink.settings_spec +
-            generate.SourceLink.settings_spec +
             debug.Options.settings_spec +
             debug.Settings.settings_spec,
         )
         def get_transforms(self):
             return builder.Builder.ReReader.get_transforms(self) + [
-                generate.PathBreadcrumb,        # 200
                 references.Substitutions,       # 220
-                debug.Settings,                 # 500
                 debug.Options,                  # 500
+                debug.Settings,                 # 500
                 clean.StripSubstitutionDefs,    # 900
                 clean.StripAnonymousTargets,    # 900
             ]
+
+    class Writer(html.Writer):
+        settings_spec = (
+            "Blue Lines HTML writer. ",
+            None, html.Writer.settings_spec[2] +
+            transform.References.settings_spec +
+            generate.PathBreadcrumb.settings_spec +
+            generate.CCLicenseLink.settings_spec +
+            generate.Timestamp.settings_spec +
+            generate.SourceLink.settings_spec 
+        )
+        def get_transforms(self):
+            tx = html.Writer.get_transforms(self) + [
+                transform.References,
+                #transform.DocInfo,
+                #transform.MarginalNotes,
+                #transform.MarginalDefinitions,
+                #transform.MarginalLinks,
+                #transform.Require,
+                #transform.Import,
+                #transform.AliasBreadCrumb
+                #generate.PathBreadcrumb,        # 200
+                generate.CCLicenseLink,
+                generate.Timestamp,
+                generate.SourceLink,
+                    ]
+            return tx
 
 
 class FormPage(Document):

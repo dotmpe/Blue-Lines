@@ -9,7 +9,7 @@ from gate import compy
 from interface import *
 
 # BL local
-from source import Source, SourceInfo, Resource
+from source import Source, SourceInfo, Resource, BuildCache
 from user import User#, UserSession
 from alias import Alias, SiteAlias, UserAlias, Membership
 from config import BuilderConfiguration, PublishConfiguration,\
