@@ -853,6 +853,15 @@ class Stat(DuBuilderPage):
         return 'text/plain', str(self.server.stat(unid, digest))
 
 
+#class Store(DuBuilderPage):
+#    pattern = API + '/source'
+#
+#    @http_qwds(':v',':path')
+#    @init_alias
+#    @conneg
+#    def post(self, user, v, alias, dir, name, lang, charset, format):
+#        pass
+
 class Process(DuBuilderPage):
     pattern = API + '/process'
 

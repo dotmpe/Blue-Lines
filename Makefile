@@ -6,13 +6,13 @@ srv:
 	dev_appserver.py ./ -a iris --datastore_path=.tmp/dev_appserver.datastore
 
 srv2:
-	dev_appserver.py ./ -a iris -p 8088 --datastore_path=.tmp/dev_appserver.datastore
+	dev_appserver.py ./ -a iris -p 8081 --datastore_path=.tmp/dev_appserver.datastore
 
 dev:
 	dev_appserver.py ./ -a iris -d --datastore_path=.tmp/dev_appserver.datastore
 
 dev2:
-	dev_appserver.py ./ -a iris -p 8088 -d --datastore_path=.tmp/dev_appserver.datastore
+	dev_appserver.py ./ -a iris -p 8082 -d --datastore_path=.tmp/dev_appserver.datastore
 
 test:
 	python test/main.py

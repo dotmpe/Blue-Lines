@@ -1,0 +1,193 @@
+api.py:8:TODO: this should be used by handlers and server, ie. move mutating operations here.
+api.py:9:TODO: session/ACL decoration later? see also model.auth
+api.py:10:TODO: find should search, fetch should raise on None-result
+api.py:57:        logger.error("TODO: implement user authentication. ")
+api.py:143:    # TODO: this yields exactly limit*2 aliases at most
+bluelines.py:228:# TODO: override..
+doc/main.rst:12:See also TODO, FIXME and XXX tags in source-code.
+doc/requirements.rst:9:  - TODO: Accept remote verification by file.
+doc/requirements.rst:24:- TODO: Update Alias and Configuration from remote forms.
+doc/requirements.rst:30:  - TODO: Queue dependencies.
+doc/requirements.rst:46:- TODO: Dependency tracking (deal with circular refs?)
+doc/requirements.rst:47:- TODO: Queue processing of dependencies, if needed, after processing a
+doc/requirements.rst:49:- TODO: Cache publications?
+doc/requirements.rst:58:  - TODO: I'd dig strict profiles, ie. XML schema's..
+doc/introduction.rst:21:TODO: blue or nabu quickstart
+extractor/alias.py:29:    # TODO: BL datastore
+extractor/alias.py:38:        # TODO: BL datastore
+handler.py:4:TODO: process on req. for static- and rst-page
+handler.py:95:        # TODO force ssl conn
+handler.py:286:        pass # TODO
+handler.py:312:                # TODO: display settings, actions
+handler.py:364:        # TODO: replace this by a (cached) hashtable solution
+handler.py:626:        #    # TODO: work in progress..
+handler.py:888:        pass # TODO: IAliasDir
+interface.py:43:# TODO: adapt model ('schema-instance') to XML instead of schema
+lib/breve/plugin/README:7:TODO: 
+lib/docutils/writers/manpage.py:334:                # TODO add prefix postfix
+lib/docutils/writers/manpage.py:974:        # TODO add report_level
+lib/docutils/writers/latex2e/docutils-05-compat.sty:382:% .. TODO or not to do? (Back-compatibility problems)
+lib/docutils/writers/latex2e/__init__.py:227:       # TODO: footnote collection transform
+lib/docutils/writers/latex2e/__init__.py:319:        # TODO: use \textquotedbl in OT1 font encoding?
+lib/docutils/writers/latex2e/__init__.py:808:                # TODO merge clines
+lib/docutils/writers/latex2e/__init__.py:847:    # TODO: use mixins for different implementations.
+lib/docutils/writers/latex2e/__init__.py:849:    ## use_optionlist_for_docinfo = False # TODO: NOT YET IN USE
+lib/docutils/writers/latex2e/__init__.py:916:            # TODO avoid errors on not declared citations.
+lib/docutils/writers/latex2e/__init__.py:985:        # TODO?: pdfcreator, pdfproducer, pdfsubject, pdfkeywords
+lib/docutils/writers/latex2e/__init__.py:1151:                     # TODO?: use texcomp instead.
+lib/docutils/writers/latex2e/__init__.py:1308:        # TODO: greek alphabet ... ?
+lib/docutils/writers/latex2e/__init__.py:1380:    # TODO: is this used anywhere? (update or delete)
+lib/docutils/writers/latex2e/__init__.py:1511:        # TODO maybe use cite bibitems
+lib/docutils/writers/latex2e/__init__.py:1515:            # TODO: do we need these?
+lib/docutils/writers/latex2e/__init__.py:1746:        # TODO insertion point of bibliography should be configurable.
+lib/docutils/writers/latex2e/__init__.py:1797:        # IN WORK BUG TODO HACK continues here
+lib/docutils/writers/latex2e/__init__.py:1958:        ##     # TODO non vertical space for other alignments.
+lib/docutils/writers/latex2e/__init__.py:2001:        ## else:  # TODO: "real" LaTeX \footnote{}s
+lib/docutils/writers/latex2e/__init__.py:2016:            # TODO: insert footnote content at (or near) this place
+lib/docutils/writers/latex2e/__init__.py:2125:                pass                    # TODO: warn?
+lib/docutils/writers/latex2e/__init__.py:2263:        # TODO: set keywords for pdf?
+lib/docutils/writers/latex2e/__init__.py:2565:        # TODO: where else can/must we omit the \phantomsection?
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:227:       # TODO: footnote collection transform
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:319:        # TODO: use \textquotedbl in OT1 font encoding?
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:808:                # TODO merge clines
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:847:    # TODO: use mixins for different implementations.
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:849:    ## use_optionlist_for_docinfo = False # TODO: NOT YET IN USE
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:916:            # TODO avoid errors on not declared citations.
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:985:        # TODO?: pdfcreator, pdfproducer, pdfsubject, pdfkeywords
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:1151:                     # TODO?: use texcomp instead.
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:1308:        # TODO: greek alphabet ... ?
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:1380:    # TODO: is this used anywhere? (update or delete)
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:1511:        # TODO maybe use cite bibitems
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:1515:            # TODO: do we need these?
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:1746:        # TODO insertion point of bibliography should be configurable.
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:1797:        # IN WORK BUG TODO HACK continues here
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:1958:        ##     # TODO non vertical space for other alignments.
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:2001:        ## else:  # TODO: "real" LaTeX \footnote{}s
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:2016:            # TODO: insert footnote content at (or near) this place
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:2125:                pass                    # TODO: warn?
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:2263:        # TODO: set keywords for pdf?
+lib/docutils/writers/latex2e/.svn/text-base/__init__.py.svn-base:2565:        # TODO: where else can/must we omit the \phantomsection?
+lib/docutils/writers/latex2e/.svn/text-base/docutils-05-compat.sty.svn-base:382:% .. TODO or not to do? (Back-compatibility problems)
+lib/docutils/writers/newlatex2e/base.tex:33:% TODO
+lib/docutils/writers/newlatex2e/.svn/text-base/base.tex.svn-base:33:% TODO
+lib/docutils/writers/.svn/text-base/manpage.py.svn-base:334:                # TODO add prefix postfix
+lib/docutils/writers/.svn/text-base/manpage.py.svn-base:974:        # TODO add report_level
+lib/docutils/writers/html4css1/__init__.py:321:            # TODO: convert non-breaking space only if needed?
+lib/docutils/writers/html4css1/.svn/text-base/__init__.py.svn-base:321:            # TODO: convert non-breaking space only if needed?
+lib/docutils/frontend.py:79:    except AttributeError:    # TODO: remove (only needed prior to Python 2.3)
+lib/docutils/.svn/text-base/frontend.py.svn-base:79:    except AttributeError:    # TODO: remove (only needed prior to Python 2.3)
+lib/dotmpe/du/builder/__init__.py:179:#        # TODO: move this to XHTML writer
+lib/dotmpe/du/builder/__init__.py:235:    #        logger.info("TODO: open or keep filelike warning_stream %s",
+lib/dotmpe/du/util.py:328:    pass # TODO
+lib/dotmpe/du/util.py:399:        raise "Too many fields in fieldspec. " # TODO: option spec parsing error
+lib/dotmpe/du/util.py:702:    # TODO: configurable body regex
+lib/dotmpe/du/util.py:703:    # TODO: case insensitive option
+lib/dotmpe/du/util.py:709:    assert not strip, "TODO, remove field lines from source. "
+lib/dotmpe/du/util.py:712:    pass # TODO: extract_modeline
+lib/dotmpe/du/ext/reader/mpe.py:45:# TODO: cannot have decorations before DocInfo transform
+lib/dotmpe/du/ext/extractor/form2.py:59:    # TODO: merge FormExtractor.extract_fields with UserSettings..       
+lib/dotmpe/du/ext/extractor/inline.py:98:            raise Exception, 'TODO: reset_schema(%s)'%repr(self)
+lib/dotmpe/du/ext/__init__.py:9:TODO:
+lib/dotmpe/du/ext/transform/template.py:7:    # TODO
+lib/dotmpe/du/ext/transform/user.py:98:        pass # TODO: need access to option_parser here.
+lib/dotmpe/du/ext/transform/user.py:126:            # TODO: unset uptions are ignored for now
+lib/dotmpe/du/ext/transform/include.py:31:                    #TODO:'validate': util.xpath_insert
+lib/dotmpe/du/ext/transform/generate.py:102:        # TODO: much more customization, what about domain, etc?
+lib/dotmpe/du/ext/transform/generate.py:222:# TODO:
+lib/dotmpe/du/ext/writer/html.py:64:        # TODO: mediatype
+lib/dotmpe/du/ext/writer/htmlform.py:41:        if self.form_field:# TODO move ID=self.form_field to field-node
+Binary file lib/dotmpe/du/ext/writer/rst.pyc matches
+Binary file lib/dotmpe/du/ext/writer/xhtml.pyc matches
+lib/dotmpe/du/ext/writer/xhtml.py:6:TODO: everything.. but first lots todo at Blue Lines.
+lib/dotmpe/du/ext/writer/xhtml.py:7:TODO: validate (tidy).
+lib/dotmpe/du/ext/writer/rst.py:27:    TODO: RstTranslator(nodes.NodeVisitor)
+Binary file lib/dotmpe/du/ext/__init__.pyc matches
+lib/dotmpe/du/form.py:133:            # TODO: 'validator':
+lib/dotmpe/du/form.py:415:            # TODO: insert message at end-bound
+lib/dotmpe/du/flatten.py:2:TODO: just an idea for another (X)HTML writer, not based on visitor pattern?
+Binary file lib/dotmpe/du/util.pyc matches
+lib/uriref.py:160:- TODO: better parsing of paths, parameters, testing.
+lib/uriref.py:162:- TODO: update to RFC 3986
+lib/uriref.py:347:# TODO: compare regex results against urlparse.urlsplit
+lib/gate/conneg.py:244:        # TODO: is_neighbour
+lib/gate/conneg.py:303:        # TODO: normalize charset token
+lib/gate/conneg.py:331:        # TODO: better matching of language tags
+lib/gate/conneg.py:359:        # TODO: feature negotiation not implemented
+lib/gate/du/reader/translit.py:18:# TODO: replace *Impl with pyscrow.Muxdem
+lib/gate/du/reader/translit.py:76:        # TODO CLinkReaderImpl, clink obj
+lib/gate/du/reader/translit.py:132:    # TODO: entities
+lib/gate/du/reader/translit.py:179:                # TODO: newlines in <pre>
+lib/gate/publishers/mod_python_handlers.py:288:	# TODO: conneg needs: stored data on variants
+lib/gate/publishers/mod_python_handlers.py:289:	# TODO: conneg cannot handle charset/language negotiation
+lib/gate/publishers/mod_python_handlers.py:290:	# TODO: vapour.sourceforge.net can debug conneg?
+lib/gate/reader.py:14:TODO: Gate Readers are fully configurable, and composed of a DU Reader, Parser,
+lib/vestige/schema/relaxng.simplified.rng:2049:                <value datatypeLibrary="" type="token" ns="TODO">choice</value>
+lib/vestige/schema/relaxng.simplified.rng:2050:                <value datatypeLibrary="" type="token" ns="TODO">interleave</value>
+lib/vestige/schema/relaxng.simplified.rng:2170:                  <value datatypeLibrary="" type="token" ns="TODO">choice</value>
+lib/vestige/schema/relaxng.simplified.rng:2171:                  <value datatypeLibrary="" type="token" ns="TODO">interleave</value>
+lib/vestige/relaxng.py:112:	# TODO:
+lib/vestige/lib/breve/plugin/README:7:TODO: 
+Binary file lib/zope/interface/interface.pyc matches
+lib/zope/interface/tests/test_odd_declarations.py:38:# TODO: We are going to need more magic to make classProvides work with odd
+lib/zope/interface/tests/test_odd_declarations.py:172:    def TODO_test_classProvides_fails_for_odd_class(self):
+Binary file lib/zope/interface/tests/test_advice.pyc matches
+lib/zope/interface/tests/test_advice.py:104:    def TODOcheckOutside(self):
+Binary file lib/zope/interface/tests/test_odd_declarations.pyc matches
+lib/zope/interface/README.txt:124:TODO
+lib/zope/interface/declarations.py:327:        # TODO: need old style __implements__ compatibility?
+lib/zope/interface/declarations.py:340:    # TODO: need old style __implements__ compatibility?
+lib/zope/interface/adapter.py:419:    # TODO: add invalidation when a provided interface changes, in case
+lib/zope/interface/interface.py:662:        TODO: It would ne nice if:
+Binary file lib/uriref.pyc matches
+Makefile:33:	# TODO: nabu has no --quiet option
+Makefile:42:TODO.txt: * 
+Makefile:43:	@rgrep -n --colour=auto TODO * {decorator,doc,extractor,model,tag,var}/* > $@
+model/__init__.py:129:    # TODO: access control
+model/__init__.py:136:            # TODO: different listTypes as resultSets, see below also
+model/__init__.py:144:    # TODO: paging
+ReadMe.rst:130:TODO: Links to current design documents, future plans go here.
+ReadMe.rst:143:TODO: establish HACKING guidelines.
+render.py:100:# TODO: adapt model ('schema-instance') to XML instead of schema
+server.py:4:TODO: How to use the file-name extension (local src vs. web resource) at least 
+server.py:130:        #        #error_messages = [ True ] # TODO: make neat message
+server.py:240:        TODO: return some helpfull comments on processed document parts.
+server.py:444:        # TODO: rewrite storage to API
+Binary file server.pyc matches
+server_tmp.py:4:TODO: How to use the file-name extension (local src vs. web resource) at least 
+server_tmp.py:131:        #        #error_messages = [ True ] # TODO: make neat message
+server_tmp.py:224:        # TODO: adapt value, schema pair to model
+server_tmp.py:251:        TODO: return some helpfull comments on processed document parts.
+storage.py:2:TODO: fix srcinfo digest
+storage.py:102:        logger.info("TODO: Store for %s deps %s", unid, depids)
+storage.py:120:                "TODO: server needs to adapt to for user"
+tests/api.py:2:TODO: http://blog.appenginefan.com/2008/06/unit-tests-for-google-app-engine-apps.html
+tests/api.py:13:        # TODO
+Binary file tests/api.pyc matches
+util.py:77:    # TODO: return session
+util.py:152:    # TODO: HTTPError, URLError
+util.py:418:                    # TODO: report warning in-document
+util.py:441:                        # TODO: report warning in-document
+var/tpl/user-aliases.b:14:    # TODO: list aliases an their types, authmethod
+var/tpl/user-alias.b:3:# TODO: create new alias
+var/media/download/nabu:607:			default=':[Ii]d:\s+(\S*)$', # TODO: multiline but what about indent..
+var/media/download/blue:767:                    # TODO: check alias/if user is member of group
+var/media/download/nabu.mpe:607:			default=':[Ii]d:\s+(\S*)$', # TODO: multiline but what about indent..
+doc/introduction.rst:21:TODO: blue or nabu quickstart
+doc/main.rst:12:See also TODO, FIXME and XXX tags in source-code.
+doc/requirements.rst:9:  - TODO: Accept remote verification by file.
+doc/requirements.rst:24:- TODO: Update Alias and Configuration from remote forms.
+doc/requirements.rst:30:  - TODO: Queue dependencies.
+doc/requirements.rst:46:- TODO: Dependency tracking (deal with circular refs?)
+doc/requirements.rst:47:- TODO: Queue processing of dependencies, if needed, after processing a
+doc/requirements.rst:49:- TODO: Cache publications?
+doc/requirements.rst:58:  - TODO: I'd dig strict profiles, ie. XML schema's..
+extractor/alias.py:29:    # TODO: BL datastore
+extractor/alias.py:38:        # TODO: BL datastore
+model/__init__.py:129:    # TODO: access control
+model/__init__.py:136:            # TODO: different listTypes as resultSets, see below also
+model/__init__.py:144:    # TODO: paging
+var/media/download/nabu:607:			default=':[Ii]d:\s+(\S*)$', # TODO: multiline but what about indent..
+var/media/download/blue:767:                    # TODO: check alias/if user is member of group
+var/media/download/nabu.mpe:607:			default=':[Ii]d:\s+(\S*)$', # TODO: multiline but what about indent..
+var/tpl/user-aliases.b:14:    # TODO: list aliases an their types, authmethod
+var/tpl/user-alias.b:3:# TODO: create new alias
