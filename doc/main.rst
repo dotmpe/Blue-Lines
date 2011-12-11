@@ -27,11 +27,11 @@ Ideas
 .. testing include:
 
 .. include:: nabu.rst
-.. include:: ./nabu.rst
-.. include:: /doc/nabu.rst
+.. .. include:: ./nabu.rst
+.. .. include:: /doc/nabu.rst
 
 .. testing
 
-.. include:: ../ReadMe.rst
-.. include:: ~Blue Lines/doc/nabu.rst
+.. .. include:: ../ReadMe.rst
+.. .. include:: ~Blue Lines/doc/nabu.rst
 
