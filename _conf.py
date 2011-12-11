@@ -27,8 +27,8 @@ if SERVER_SOFTWARE.startswith('Development/'):
     #else:
     #    HOST = 'iris:%s' % os.environ['SERVER_PORT']
     # XXX: dev server needs separate server for local-request
-    HOST = 'iris:8080'
-    ALTHOST = 'iris:8088'
+    HOST = 'iris:8081'
+    ALTHOST = 'iris:8082'
 
 elif SERVER_SOFTWARE.startswith('Google App Engine/'):
     # Deployed app

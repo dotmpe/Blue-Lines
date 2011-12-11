@@ -3,22 +3,23 @@ Aux. model controller routines.
 
 Scaffolding for model, used by handler and server. 
 FIXME: In fact, some it there may move here, and model should not be used
-    directly.
+    directly. Also review storage..
 
 TODO: this should be used by handlers and server, ie. move mutating operations here.
 TODO: session/ACL decoration later? see also model.auth
 TODO: find should search, fetch should raise on None-result
 """
+# Stdlib  {{{
 import logging
 import itertools
 import functools
-import hashlib
-
+import hashlib # }}}
+# Third Party {{{
 import _conf
 from docutils import nodes
 from google.appengine.api import users
-from google.appengine.ext import db
-
+from google.appengine.ext import db # }}}
+# BL  {{{
 import util
 import exception
 import interface
@@ -27,7 +28,7 @@ from model.source import Source, SourceInfo
 from model.user import User
 from model.alias import Alias, SiteAlias, UserAlias
 from model.config import BuilderConfiguration, \
-    PublishConfiguration, ProcessConfiguration
+    PublishConfiguration, ProcessConfiguration # }}}
 
 
 logger = logging.getLogger(__file__)

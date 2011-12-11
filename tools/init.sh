@@ -12,16 +12,15 @@ do_dev_login()
         -F admin=True \
         -F continue='' \
         -F action=Login \
-        -c .cookie.jar;
+        -c .cookies.txt;
     print_result $? "Logged in at dev-server. " "Error logging in at dev-server."
 }
 do_ga_login()
 {
-    if test ! -e .cookie.jar; then
+    if test ! -e .cookies.txt; then
         curl $CURL/user/auth \
             --data @/home/berend/project/dotmpe-com/var/phpbl/post-credentials.txt \
-            -c .cookie.jar;
-            #-F passwd=MassiveGMail -F email=berend.van.berkum@gmail.com \
+            -c .cookies.txt;
         print_result $? "Logged in at GA. " "Error logging in at GA. "
     fi;        
 }
@@ -54,7 +53,7 @@ init_pub_config()
             -F title="Blue Lines HTML" \
             -F writer="dotmpe-html" \
             -F template="var/du-html-template.txt" \
-            -F stylesheet="/media/style/default.css" \
+            -F stylesheet="/media/style/zope.css,/media/style/bluelines.css" \
             -F breadcrumb=yes
         print_result $? "Initialized config:bl:html" "Error initializing config:bl:html"
 #    fi;
@@ -112,6 +111,20 @@ init_alias()
         ;
     print_result $? "Initialized alias:Sandbox" "Error initializing alias:Sandbox"
 #fi;        
+#curl $CURL/alias/Sandbox
+#if test $? -ge 1; then
+    curl $CURL/alias \
+        -F handle="Sandbox" \
+        -F "default-title"="Sandbox" \
+        -F public=True \
+        -F "proc-config"="bl,bluelines" \
+        -F "default-page"=welcome \
+        -F "default-leaf"=main \
+        -F "strip-extension"="True" \
+        -F "unid-includes-format"="False" \
+        ;
+    print_result $? "Initialized alias:Sandbox" "Error initializing alias:Sandbox"
+#fi;        
 }
 delete_all()
 {
@@ -129,26 +142,51 @@ test_fetch()
     curl $CURL_/config/bl/publish/html 
     curl $CURL_/config/bl 
 }
-#CURL="-b .cookie.jar -f -o /dev/null http://iris:8080/0.1/dubl"
-rm .cookie.jar
+#CURL="-b .cookies.txt -f -o /dev/null http://iris:8080/0.1/dubl"
+rm .cookies.txt
 if test "$1" == 'dev'; then
-    CURL_="-b .cookie.jar http://iris:8080/0.1/dubl"
+    CURL_="-b .cookies.txt http://iris:8080/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
     do_dev_login # first-run bug in GAE-SDK, module not loaded
     do_dev_login
 else
-    CURL_="-b .cookie.jar http://blue-lines.appspot.com/0.1/dubl"
+    CURL_="-b .cookies.txt http://blue-lines.appspot.com/0.1/dubl"
     CURL=" --fail --silent -o /dev/null "$CURL_
     do_ga_login
 fi;
 #delete_all
 #test_fetch
-init_build_config
-init_proc_config
+#init_build_config
+#init_proc_config
 init_pub_config
+exit
 init_alias
 #test_fetch
 if test "$1" == 'dev'; then
+    curl $CURL/process \
+        -F unid="~BL Dev/doc/issues" \
+        -F format="rst"
+    curl $CURL/process \
+        -F unid="~BL Dev/doc/introduction" \
+        -F format="rst"
+    curl $CURL/process \
+        -F unid="~BL Dev/doc/requirements" \
+        -F format="rst"
+    curl $CURL/process \
+        -F unid="~BL Dev/doc/app-engine" \
+        -F format="rst"
+    curl $CURL/process \
+        -F unid="~BL Dev/doc/nabu" \
+        -F format="rst"
+    curl $CURL/process \
+        -F unid="~BL Dev/doc/du-errors" \
+        -F format="rst"
+    curl $CURL/process \
+        -F unid="~BL Dev/doc/introduction" \
+        -F format="rst"
+    curl $CURL/process \
+        -F unid="~BL Dev/doc/main" \
+        -F format="rst"
     curl $CURL/process \
         -F unid="~BL Dev/ReadMe" \
         -F format="rst"
@@ -156,23 +194,23 @@ if test "$1" == 'dev'; then
         -F unid="~BL Dev/ReadMe" \
         -F format=html
 fi;
-curl $CURL/process \
-    -F unid="~Blue Lines/ReadMe" \
-    -F format="rst"
-curl $CURL/process \
-    -F unid="~Blue Lines/doc/main" \
-    -F format="rst"
-curl $CURL/process \
-    -F unid="~Blue Lines/doc/requirements" \
-    -F format="rst"
-curl $CURL/process \
-    -F unid="~Blue Lines/doc/issues" \
-    -F format="rst"
-curl $CURL/process \
-    -F unid="~Blue Lines/ReadMe" 
-curl $CURL/publish \
-    -F unid="~Blue Lines/ReadMe" \
-    -F format=html
+#curl $CURL/process \
+#    -F unid="~Blue Lines/ReadMe" \
+#    -F format="rst"
+#curl $CURL/process \
+#    -F unid="~Blue Lines/doc/main" \
+#    -F format="rst"
+#curl $CURL/process \
+#    -F unid="~Blue Lines/doc/requirements" \
+#    -F format="rst"
+#curl $CURL/process \
+#    -F unid="~Blue Lines/doc/issues" \
+#    -F format="rst"
+#curl $CURL/process \
+#    -F unid="~Blue Lines/ReadMe" 
+#curl $CURL/publish \
+#    -F unid="~Blue Lines/ReadMe" \
+#    -F format=html
 #curl $CURL_/process \
 #    --data unid="~Sandbox/Test1" \
 #    --data-urlencode rst@"ReadMe.rst" 

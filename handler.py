@@ -573,7 +573,8 @@ class LocalPage(DuBuilderPage):
     @web_auth
     @mime
     def get(self, user, alias, docname, format=None):
-        logging.info([user, alias, docname, format])
+        lang=None; charset=None
+        logging.info([user, alias, docname, lang, charset, format])
         if not alias:
             return self.not_found(self.request.uri)
         alias = api.find_alias(None, alias)
@@ -583,18 +584,24 @@ class LocalPage(DuBuilderPage):
             docname += alias.default_leaf
         unid = "~%s/%s" % (alias.handle, docname)
         self.server._reload(alias)
-        srcinfo = api.find_sourceinfo(alias, unid)
-        if not srcinfo:
-            stat = self.server.stat(unid)
-            if stat:
-                # FIXME..
-                taskqueue.add(url=API+'process', params={'unid':unid})
-                return 'text/plain', "Please wait for the document to be "\
-                        "processed. This happens once on every remote update. "
-            else:
-                return self.not_found(unid)
+        stat = self.server.stat(unid)
         if not format: format='html'
-        output = self.server.publish(unid, publish_conf=format).output
+        if not stat:
+            if stat.srcnfo:
+                cache = model.BuildCache.all().ancestor(stat.srcnfo).get()
+                if cache: cache.delete()
+            pr = self.server.process(unid, format='rst')
+            assert not pr.errors, map(lambda x:x.astext(),
+                    pr.errors)
+        cached = model.BuildCache.get_by_key_name(format,
+                    stat.srcnfo)
+        if cached:
+            output = cached.output
+        else:            
+            output = self.server.publish(unid, format).output
+            srcnfo = api.find_sourceinfo(alias, unid)
+            model.BuildCache(key_name=format, 
+                    output=output, parent=srcnfo).put()            
         return mediatype_for_extension(format), output
 
 
@@ -620,19 +627,28 @@ class StaticPage(DuBuilderPage):
         unid = "~%s/%s" % (alias.handle, doc_name)
         logger.info("StaticPage GET %s", unid)
         self.server._reload(alias)
-        #stat = self.server.stat(unid)
-        #if not stat:
-        #    logger.info("StaticPage: %s needs (re)proc.", unid)
-        #    # TODO: work in progress..
-        #    #return self.multistep(API+'/process', self.request.uri)
-        #    srcinfo = self.server.get(unid)
-        #    doc, msgs = self.server.process(srcinfo, unid,
-        #            settings_overrides=params)
-        #    assert not doc.transform_messages, map(lambda x:x.astext(),
-        #            doc.transform_messages)
-        # Now render the result into a BL page 
+        stat = self.server.stat(unid)
         if not format: format='html'
-        output = self.server.publish(unid, format).output
+        if not stat:
+            if stat.srcnfo:
+                # clear cache
+                cache = model.BuildCache.all().ancestor(stat.srcnfo).get()
+                if cache: cache.delete()
+            logger.info("StaticPage: %s needs (re)proc.", unid)
+            # TODO: work in progress..
+            #return self.multistep(API+'/process', self.request.uri)
+            pr = self.server.process(unid, format='rst')
+            assert not pr.errors, map(lambda x:x.astext(),
+                    pr.errors)
+        cached = model.BuildCache.get_by_key_name(format,
+                    stat.srcnfo)
+        if cached:
+            output = cached.output
+        else:                
+            output = self.server.publish(unid, format).output
+            srcnfo = api.find_sourceinfo(alias, unid)
+            model.BuildCache(key_name=format, 
+                    output=output, parent=srcnfo).put()            
         return mediatype_for_extension(format), output
 
 
@@ -836,6 +852,15 @@ class Stat(DuBuilderPage):
         self.server._reload(alias)
         return 'text/plain', str(self.server.stat(unid, digest))
 
+
+#class Store(DuBuilderPage):
+#    pattern = API + '/source'
+#
+#    @http_qwds(':v',':path')
+#    @init_alias
+#    @conneg
+#    def post(self, user, v, alias, dir, name, lang, charset, format):
+#        pass
 
 class Process(DuBuilderPage):
     pattern = API + '/process'

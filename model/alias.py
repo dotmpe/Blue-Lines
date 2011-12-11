@@ -7,6 +7,7 @@ from google.appengine.ext.db import polymodel
 import interface
 from model.user import User
 from model.config import ProcessConfiguration
+from model import extras
 
 
 
@@ -17,9 +18,6 @@ class Alias(polymodel.PolyModel):
     """
     Every document is 'owned' by an Alias, a pseudonym for an author or a
     group of writers.
-
-    XXX: Aliases are given away freely but should be revoked after periods
-    of inaction. Would require only the blanking/rewriting of handle.
     """
     implements(interface.IAlias)
 
@@ -29,38 +27,47 @@ class Alias(polymodel.PolyModel):
     #"The builder documents under the alias are restricted to. "
     
     proc_config = db.ReferenceProperty(ProcessConfiguration, required=True)
+    """
+    Name for process config. Determines builder and possible publication
+    formats too.
+    """
 
 #    "This may be overridden on a per-document bases using BuilderInfo.public. "
 #    "Enable the SpecInfo tranform to override this on a per-document basis. "
 
+    #unid_format = extras.PlainStringProperty(
+    #        default="~%(alias)s/%(docname)s\n.%(charset)s\n.%(format)s")
+
+    default_source_format = extras.PlainStringProperty(default='rst')
+
+    default_publication_format = extras.PlainStringProperty(
+            default="html")
+    """
+    """
+
+    #unid_includes_format = db.ChoiceProperty(['optional','require','leave'])
+    """
+    """
+
     strip_extension = db.BooleanProperty(default=True)
     """
-    If an UNID includes format, remove it, this allows the format to change, 
-    while still keeping the UNID rewritable to an (remote) filename.
+    Always strip charset and format extensions in output references.
     """
-    " (But only rst is supported at the moment. )"
-    " UNIDs may not include periods. "
-    # FIXME: for references, but what about Id..
-    """
-    Source normally specs-format. 
-    There is only one source, and one format,
-    but normally the format is not included in the UNID.
-    It is stripped if present upon process.
-    However added upon remote-id rewrite.
-    The format may be altered
-    """
-    unid_includes_format = db.BooleanProperty(default=True)
 
     public = db.BooleanProperty(default=False)
-    "Wether contents may be displayed or listed publicly. "
-    "This may be overridden on a per-document bases using SourceInfo.public. "
+    """
+    Wether contents may be displayed or listed publicly. 
+    This may be overridden on a per-document bases using SourceInfo.public. 
+    """
 
     form = db.StringProperty(default='')
     "The local name of the form's source document. "
 
-    default_title = db.StringProperty(required=True)
     default_page = db.StringProperty(default='home')
+    "The default document, ie. the home-page of the corpus."
+
     default_leaf = db.StringProperty(default='index')
+    "The default document for subdirectories. "
 
 
 class UserAlias(Alias):

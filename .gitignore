@@ -15,3 +15,5 @@ lib/nabu.hg
 lib/vestige
 lib/zope
 lib/xmlrpcserver
+.cookies.txt
+lib

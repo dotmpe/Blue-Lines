@@ -6,13 +6,13 @@ srv:
 	dev_appserver.py ./ -a iris --datastore_path=.tmp/dev_appserver.datastore
 
 srv2:
-	dev_appserver.py ./ -a iris -p 8088 --datastore_path=.tmp/dev_appserver.datastore
+	dev_appserver.py ./ -a iris -p 8081 --datastore_path=.tmp/dev_appserver.datastore
 
 dev:
 	dev_appserver.py ./ -a iris -d --datastore_path=.tmp/dev_appserver.datastore
 
 dev2:
-	dev_appserver.py ./ -a iris -p 8088 -d --datastore_path=.tmp/dev_appserver.datastore
+	dev_appserver.py ./ -a iris -p 8082 -d --datastore_path=.tmp/dev_appserver.datastore
 
 test:
 	python test/main.py
@@ -33,10 +33,14 @@ update-docs:
 	# TODO: nabu has no --quiet option
 
 loc: loc.txt
-	@echo Project has `cat $@.txt|grep total -|sed 's/total//'` Python Lines of Code.
+	@echo Project has `cat $@.txt|grep total -|sed 's/total//'` Lines of Python Code.
 
 loc.txt: ./*.py */*.py
 	@wc -l *.py {extractor,decorator,model,tag}/*.py > $@
+
+
+TODO.txt: * 
+	@rgrep -n --colour=auto TODO * {decorator,doc,extractor,model,tag,var}/* > $@
 
 
 # vim:noet: 
