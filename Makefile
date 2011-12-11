@@ -1,18 +1,24 @@
 .PHONY: default update update-app update-docs clean clean-pyc test dev loc
 
+ifeq($(shell hostname),robin)
+ADDRESS := robin.pandora.dennenweg
+else
+ADDRESS := iris
+endif
+APP_ENGINE := $(shell echo /src/google-appengine/google_appengine_*/|grep -v '\*'|sort -g|tr ' ' '\n'|tail -1)
 default:
 
 srv:
-	dev_appserver.py ./ -a iris --datastore_path=.tmp/dev_appserver.datastore
+	$(APP_ENGINE)/dev_appserver.py ./ -a $(ADDRESS) --datastore_path=.tmp/dev_appserver.datastore
 
 srv2:
-	dev_appserver.py ./ -a iris -p 8081 --datastore_path=.tmp/dev_appserver.datastore
+	$(APP_ENGINE)/dev_appserver.py ./ -a $(ADDRESS) -p 8081 --datastore_path=.tmp/dev_appserver.datastore
 
 dev:
-	dev_appserver.py ./ -a iris -d --datastore_path=.tmp/dev_appserver.datastore
+	$(APP_ENGINE)/dev_appserver.py ./ -a $(ADDRESS) -d --datastore_path=.tmp/dev_appserver.datastore
 
 dev2:
-	dev_appserver.py ./ -a iris -p 8082 -d --datastore_path=.tmp/dev_appserver.datastore
+	$(APP_ENGINE)/dev_appserver.py ./ -a $(ADDRESS) -p 8082 -d --datastore_path=.tmp/dev_appserver.datastore
 
 test:
 	python test/main.py
