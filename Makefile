@@ -1,11 +1,12 @@
 .PHONY: default update update-app update-docs clean clean-pyc test dev loc
 
-ifeq($(shell hostname),robin)
+ifeq ($(shell hostname),robin)
 ADDRESS := robin.pandora.dennenweg
 else
 ADDRESS := iris
 endif
 APP_ENGINE := $(shell echo /src/google-appengine/google_appengine_*/|grep -v '\*'|sort -g|tr ' ' '\n'|tail -1)
+
 default:
 
 srv:
